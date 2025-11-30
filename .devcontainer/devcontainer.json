@@ -1,0 +1,77 @@
+{
+  "name": "LocalStack + AWS + Terraform Dev Environment",
+  "build": {
+    "dockerfile": "./Dockerfile",
+    "context": ".."
+  },
+  "runArgs": [
+    "--add-host=host.docker.internal:host-gateway"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": false,
+      "azureDnsAutoDetection": true,
+      "installDockerBuildx": true,
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/aws-cli:1": {},
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "version": "latest"
+    },
+    "ghcr.io/localstack/devcontainer-feature/localstack-cli": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-json",
+        "HashiCorp.terraform",
+        "ms-vscode.aws-toolkit",
+        "localstack.localstack-toolkit",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        "aws.telemetry": false,
+        "localstack.endpoint": "http://host.docker.internal:4566",
+        "docker.defaultPlatform": "linux/amd64"
+      }
+    }
+  },
+  "forwardPorts": [
+    3000,
+    4566,
+    5001
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "App Server",
+      "onAutoForward": "notify"
+    },
+    "4566": {
+      "label": "LocalStack",
+      "onAutoForward": "silent"
+    },
+    "5001": {
+      "label": "Docker Registry",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/scripts/install_zscaler_cert.sh || true && bash .devcontainer/scripts/post-create.sh && bash .devcontainer/scripts/one-time-setup.sh",
+  "remoteEnv": {
+    "AWS_DEFAULT_REGION": "us-east-1",
+    "AWS_ACCESS_KEY_ID": "test",
+    "AWS_SECRET_ACCESS_KEY": "test",
+    "LOCALSTACK_ENDPOINT": "http://host.docker.internal:4566"
+  },
+  "postStartCommand": "bash -c 'cd /workspaces/* 2>/dev/null || cd /workspace 2>/dev/null; pwd; bash .devcontainer/scripts/start-services.sh'"
+}
