@@ -5,7 +5,12 @@ variable "project_name" {
 }
 
 variable "environment" {
-  description = "Environment name (e.g., dev, prod)"
+  description = "Environment name (e.g., prod, staging, feature/mybranch) - REQUIRED"
   type        = string
-  default     = "dev"
+}
+
+variable "bucket_base_name" {
+  description = "Base name for S3 bucket (e.g., hello-nextjs)"
+  type        = string
+  default     = "hello-nextjs"
 }

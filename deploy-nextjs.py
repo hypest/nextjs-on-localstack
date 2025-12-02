@@ -11,8 +11,9 @@ s3 = boto3.client(
     config=Config(s3={'use_path_style': True, 'signature_version': 's3v4'})
 )
 
-bucket = 'hello-nextjs-dev-devcontainer-localstack'
-local_dir = '/workspaces/localstack-terraform-dind-test/hello-nextjs/out'
+import sys
+bucket = sys.argv[1] if len(sys.argv) > 1 else 'hello-nextjs-dev-devcontainer-localstack'
+local_dir = '/workspaces/experimental-nextjs-app/hello-nextjs/out'
 
 def upload_dir(prefix=''):
     for root, dirs, files in os.walk(local_dir):
@@ -43,4 +44,4 @@ for page in pages:
             s3.delete_object(Bucket=bucket, Key=obj['Key'])
 
 upload_dir()
-print('Deploy complete!')
+print(f'Deploy to s3://{bucket} complete!')

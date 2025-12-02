@@ -55,7 +55,7 @@ provider "aws" {
 module "nextjs_s3" {
   source = "../modules/s3"
 
-  bucket_name  = "hello-nextjs"
+  bucket_name  = var.bucket_base_name
   environment  = var.environment
   project_name = var.project_name
 }
