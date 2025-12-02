@@ -51,3 +51,11 @@ provider "aws" {
 #   environment  = var.environment
 #   project_name = var.project_name
 # }
+
+module "nextjs_s3" {
+  source = "../modules/s3"
+
+  bucket_name  = "hello-nextjs"
+  environment  = var.environment
+  project_name = var.project_name
+}

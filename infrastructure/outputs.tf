@@ -17,3 +17,11 @@ output "local_registry_url" {
 # output "example_dynamodb_table_name" {
 #   value = module.example_dynamodb.table_name
 # }
+output "nextjs_s3_website_endpoint" {
+  description = "Website endpoint for the Next.js app on S3"
+  value       = module.nextjs_s3.website_endpoint
+}
+output "nextjs_s3_bucket_name" {
+  description = "S3 bucket name for the Next.js app"
+  value       = module.nextjs_s3.bucket_name
+}
