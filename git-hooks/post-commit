@@ -1,0 +1,31 @@
+#!/bin/bash
+set -euo pipefail
+
+# Auto-deploy on commit: infra + app based on current branch
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REPO_ROOT=$(git rev-parse --show-toplevel)
+echo "🔄 Post-commit hook: Branch '$BRANCH' → auto-deploy from $REPO_ROOT"
+
+case "$BRANCH" in
+  "production")
+    ENV="prod"
+    ;;
+  "develop")
+    ENV="staging"
+    ;;
+  *)
+    echo "   → Skipping auto-deploy for branch '$BRANCH' (use manual ./scripts/deploy-app.sh feature/$BRANCH)"
+    exit 0
+    ;;
+esac
+
+echo "   → Environment: $ENV"
+
+# Deploy infra (idempotent)
+"$REPO_ROOT/scripts/deploy-infra.sh" "$ENV"
+
+# Deploy app
+"$REPO_ROOT/scripts/deploy-app.sh" "$ENV"
+
+echo "✅ Auto-deploy complete for $ENV!"
