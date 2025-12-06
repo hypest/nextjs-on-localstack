@@ -17,7 +17,9 @@ echo "   Infra dir: $INFRA_DIR"
 cd "$INFRA_DIR"
 
 # Select or create Terraform workspace matching environment
-WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
+# Sanitize environment name for both workspace and bucket names
+SANITIZED_ENV=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
+WORKSPACE="$SANITIZED_ENV"
 if ! terraform workspace select "$WORKSPACE" 2>/dev/null; then
     echo "Creating new Terraform workspace: $WORKSPACE (sanitized from $ENVIRONMENT)"
     terraform workspace new "$WORKSPACE"
@@ -26,12 +28,12 @@ else
 fi
 
 # Plan (optional, comment out for auto-apply only)
-# terraform plan -var="environment=$ENVIRONMENT" -var="bucket_base_name=$BUCKET_BASE_NAME"
+# terraform plan -var="environment=$SANITIZED_ENV" -var="bucket_base_name=$BUCKET_BASE_NAME"
 
 # Apply
 echo "Applying Terraform..."
 terraform apply -auto-approve \
-    -var="environment=$ENVIRONMENT" \
+    -var="environment=$SANITIZED_ENV" \
     -var="bucket_base_name=$BUCKET_BASE_NAME"
 
 # Output key values
