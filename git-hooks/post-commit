@@ -9,14 +9,14 @@ echo "🔄 Post-commit hook: Branch '$BRANCH' → auto-deploy from $REPO_ROOT"
 
 case "$BRANCH" in
   "production")
-    ENV="prod"
+    echo "   → Skipping auto-deploy for production branch to avoid production deployment"
+    exit 0
     ;;
   "develop")
     ENV="staging"
     ;;
   *)
-    echo "   → Skipping auto-deploy for branch '$BRANCH' (use manual ./scripts/deploy-app.sh feature/$BRANCH)"
-    exit 0
+    ENV="$BRANCH"
     ;;
 esac
 
