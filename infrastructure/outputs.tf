@@ -26,3 +26,18 @@ output "s3_bucket_name" {
   description = "S3 bucket name for the app"
   value       = module.nextjs_s3.bucket_name
 }
+
+output "ec2_instance_id" {
+  description = "EC2 instance ID for backend API"
+  value       = module.backend_ec2.instance_id
+}
+
+output "ec2_instance_public_ip" {
+  description = "EC2 instance public IP"
+  value       = module.backend_ec2.instance_public_ip
+}
+
+output "api_endpoint" {
+  description = "Backend API endpoint URL"
+  value       = module.backend_ec2.api_endpoint
+}

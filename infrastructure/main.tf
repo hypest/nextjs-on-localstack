@@ -21,8 +21,8 @@ provider "aws" {
     sqs      = "http://localhost:4566"
     s3       = "http://localhost:4566"
     dynamodb = "http://localhost:4566"
+    ec2      = "http://localhost:4566"
     # Add more services as needed, e.g.:
-    # ec2     = "http://localhost:4566"
     # iam     = "http://localhost:4566"
   }
 }
@@ -56,6 +56,13 @@ module "nextjs_s3" {
   source = "../modules/s3"
 
   bucket_name  = var.bucket_base_name
+  environment  = var.environment
+  project_name = var.project_name
+}
+
+module "backend_ec2" {
+  source = "../modules/ec2"
+
   environment  = var.environment
   project_name = var.project_name
 }
