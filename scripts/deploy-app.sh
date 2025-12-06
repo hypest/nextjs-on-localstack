@@ -28,7 +28,6 @@ echo "📦 Building Next.js..."
 cd "$APP_DIR"
 npm ci --only=production  # Fast install
 npm run build
-npm run export
 echo "   Build complete: out/ ready"
 
 # Deploy via Python (boto3)
