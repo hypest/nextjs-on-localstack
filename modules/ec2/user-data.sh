@@ -1,24 +1,31 @@
 #!/bin/bash
 set -euo pipefail
 
-# Update system
+# EC2 User Data Script - Install and run backend API container
+# This script would run on real AWS EC2 instances during bootstrap
+
+echo "Starting EC2 bootstrap for backend API..."
+
+# Install Docker (on Ubuntu - adjust for Amazon Linux if needed)
 apt-get update
-apt-get install -y curl
+apt-get install -y docker.io curl
 
-# Install Node.js 18.x
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt-get install -y nodejs
+# Start Docker service
+service docker start
 
-# Create app directory
-mkdir -p /home/ubuntu/backend-api
-cd /home/ubuntu/backend-api
+# Login to local Docker registry (for LocalStack development)
+echo "Logging into local Docker registry..."
+docker login localhost:5001 --username test --password test
 
-# Copy application files (these would be deployed separately in production)
-# For LocalStack testing, we'll package them in the AMI or use a simple deployment method
+# Pull and run the backend API container
+echo "Pulling and starting backend API container..."
+docker run -d \
+  --name backend-api \
+  --restart unless-stopped \
+  -p 3001:3001 \
+  -e NODE_ENV=production \
+  -e EC2_INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id || echo "local-instance") \
+  localhost:5001/backend-api:latest
 
-# Get instance ID from metadata service (LocalStack simulates this)
-export INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id || echo "local-instance")
-
-# Start the application
-# Note: In production, you'd use systemd or pm2 for process management
-nohup node /home/ubuntu/backend-api/server.js > /var/log/api.log 2>&1 &
+echo "Backend API container started successfully!"
+echo "API available at: http://localhost:3001/api/status"

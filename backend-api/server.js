@@ -1,13 +1,26 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
+// Enable CORS for all routes
+app.use(
+  cors({
+    origin: true, // Allow all origins for development
+    credentials: true,
+  })
+);
 
 // Simple status endpoint
 app.get("/api/status", (req, res) => {
   res.json({
     timestamp: new Date().toISOString(),
-    instanceId: process.env.INSTANCE_ID || "unknown",
-    message: "Hello from EC2 on LocalStack!",
+    instanceId:
+      process.env.EC2_INSTANCE_ID ||
+      process.env.INSTANCE_ID ||
+      "docker-container",
+    environment: process.env.NODE_ENV || "development",
+    message: "Hello from EC2 Docker container on LocalStack!",
   });
 });
 
