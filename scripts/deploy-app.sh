@@ -14,6 +14,17 @@ APP_DIR="$PROJECT_ROOT/hello-nextjs"
 DEPLOY_PY="$PROJECT_ROOT/deploy-nextjs.py"  # Updated to take bucket arg
 VENV="$PROJECT_ROOT/venv-deploy"
 
+# Protection: Confirm prod/staging deployments
+if [[ "$ENVIRONMENT" == "prod" || "$ENVIRONMENT" == "staging" ]]; then
+    echo "⚠️  WARNING: You are about to deploy to '$ENVIRONMENT' environment!"
+    read -p "Are you sure you want to continue? (yes/no): " -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+        echo "❌ Deployment cancelled."
+        exit 1
+    fi
+fi
+
 echo "🚀 Deploying app for environment: $ENVIRONMENT"
 
 # Switch to env workspace & get bucket

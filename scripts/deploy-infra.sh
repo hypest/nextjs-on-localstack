@@ -10,11 +10,26 @@ BUCKET_BASE_NAME="${2:-hello-nextjs}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INFRA_DIR="$(dirname "$SCRIPT_DIR")/infrastructure"
 
+# Protection: Confirm prod/staging deployments
+if [[ "$ENVIRONMENT" == "prod" || "$ENVIRONMENT" == "staging" ]]; then
+    echo "⚠️  WARNING: You are about to deploy to '$ENVIRONMENT' environment!"
+    read -p "Are you sure you want to continue? (yes/no): " -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+        echo "❌ Deployment cancelled."
+        exit 1
+    fi
+fi
+
 echo "🚀 Deploying infrastructure for environment: $ENVIRONMENT"
 echo "   Bucket base: $BUCKET_BASE_NAME"
 echo "   Infra dir: $INFRA_DIR"
 
 cd "$INFRA_DIR"
+
+# Initialize Terraform to ensure modules and providers are up-to-date
+echo "Initializing Terraform..."
+terraform init
 
 # Select or create Terraform workspace matching environment
 # Sanitize environment name for both workspace and bucket names
