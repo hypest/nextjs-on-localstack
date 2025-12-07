@@ -53,7 +53,7 @@ provider "aws" {
 # }
 
 module "nextjs_s3" {
-  source = "../modules/s3"
+  source = "./modules/s3"
 
   bucket_name  = var.bucket_base_name
   environment  = var.environment
@@ -61,7 +61,7 @@ module "nextjs_s3" {
 }
 
 module "backend_ec2" {
-  source = "../modules/ec2"
+  source = "./modules/ec2"
 
   environment  = var.environment
   project_name = var.project_name
