@@ -93,6 +93,7 @@ module "my_sqs" {
 | **SQS** | `awslocal sqs create-queue --queue-name my-queue` |
 | **DynamoDB** | `awslocal dynamodb create-table --table-name my-table --attribute-definitions AttributeName=pk,AttributeType=S --key-schema AttributeName=pk,KeyType=HASH` |
 | **Test** | `http GET localhost:4566/health` (httpie) |
+| **Docker dashboard** | `docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath:/.config/jesseduffield/lazydocker lazyteam/lazydocker` |
 
 ## 🐛 Troubleshooting
 
