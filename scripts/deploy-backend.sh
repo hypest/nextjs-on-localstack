@@ -43,11 +43,11 @@ fi
 
 echo "Using port $API_PORT and subdomain $API_SUBDOMAIN for environment $ENVIRONMENT"
 
-# Get EC2 instance ID from Terraform (simulating metadata service)
+# Get EC2 instance ID from Terragrunt (simulating metadata service)
 cd "$PROJECT_ROOT/infrastructure"
 WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
-terraform workspace select "$WORKSPACE" 2>/dev/null || echo "Warning: Could not select workspace $WORKSPACE"
-INSTANCE_ID=$(terraform output -raw ec2_instance_id 2>/dev/null || echo "local-instance-$ENVIRONMENT")
+terragrunt workspace select "$WORKSPACE" 2>/dev/null || echo "Warning: Could not select workspace $WORKSPACE"
+INSTANCE_ID=$(terragrunt output -raw ec2_instance_id 2>/dev/null || echo "local-instance-$ENVIRONMENT")
 
 # Stop any existing container for this environment
 CONTAINER_NAME="backend-api-$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')"

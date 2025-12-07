@@ -60,6 +60,10 @@ echo "EC2 Instance: $(terraform output -raw ec2_instance_id)"
 echo "API Endpoint: $(terraform output -raw api_endpoint)"
 echo ""
 
-# Deploy backend container (simulates EC2 user-data execution)
-echo "🐳 Deploying backend API container..."
-"$SCRIPT_DIR/deploy-backend.sh" "$ENVIRONMENT"
+# Conditionally deploy backend if EC2 module is present and backend-api exists
+if terraform output ec2_instance_id >/dev/null 2>&1 && [[ -d "$PROJECT_ROOT/backend-api" ]]; then
+    echo "🐳 Deploying backend API container..."
+    "$SCRIPT_DIR/deploy-backend.sh" "$ENVIRONMENT"
+else
+    echo "ℹ️  Skipping backend deployment (EC2 not present or backend-api missing)"
+fi
