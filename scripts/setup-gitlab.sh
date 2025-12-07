@@ -72,6 +72,10 @@ Host localhost
 EOF
 fi
 
+# Update SSH known_hosts to avoid host key verification issues
+echo "🔧 Updating SSH known_hosts..."
+ssh-keyscan -p 2222 -H localhost >> "${HOME}/.ssh/known_hosts" 2>/dev/null || echo "Warning: Could not update known_hosts"
+
 # Set up GitLab project and SSH key using Rails console
 echo "🔧 Setting up GitLab project and SSH key..."
 
