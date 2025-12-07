@@ -84,29 +84,37 @@ echo "📁 Creating project..."
 export PROJECT_NAME="${PROJECT_NAME}"
 docker exec -e PROJECT_NAME gitlab gitlab-rails runner "
 user = User.find_by_username('root')
-organization = Organizations::Organization.first
 namespace = user.namespace
-namespace.organization = organization
-namespace.save
 project = Project.find_by_path(ENV['PROJECT_NAME']) || Project.new(
   name: ENV['PROJECT_NAME'],
   path: ENV['PROJECT_NAME'],
   namespace: namespace,
   creator: user,
-  organization: organization,
+  organization: namespace.organization,
   visibility_level: 0
 )
 if project.save
   puts \"Project ready with ID: #{project.id}\"
+  puts \"Project full path: #{project.full_path}\"
   # Initialize the repository
   unless project.repository.exists?
     project.repository.create_repository
     puts \"Repository initialized\"
   end
+  # Ensure the creator is explicitly added as a member
+  unless project.team.member?(user)
+    project.add_maintainer(user)
+    puts \"Added root user as maintainer\"
+  end
 else
   puts \"Failed to create project: #{project.errors.full_messages.join(', ')}\"
 end
 "
+
+# Get the project full path for the remote URL
+echo "🔗 Getting project path..."
+PROJECT_FULL_PATH=$(docker exec -e PROJECT_NAME gitlab gitlab-rails runner "p = Project.find_by(name: ENV['PROJECT_NAME']); puts p.full_path" | tail -1)
+echo "Project full path: ${PROJECT_FULL_PATH}"
 
 # Add SSH key
 echo "🔑 Adding SSH key..."
@@ -124,7 +132,7 @@ end
 " 2>/dev/null || echo "Failed to add SSH key"
 
 # Set up Git remote
-SSH_URL="ssh://git@localhost:2222/root/${PROJECT_NAME}.git"
+SSH_URL="ssh://git@localhost:2222/${PROJECT_FULL_PATH}.git"
 echo "🔗 Setting up Git remote 'gitlab' to: ${SSH_URL}"
 
 if git remote | grep -q "^gitlab$"; then
@@ -147,4 +155,4 @@ echo "   - GitLab project: ${PROJECT_NAME}"
 echo "   - Git remote: gitlab -> ${SSH_URL}"
 echo ""
 echo "🚀 You can now push to GitLab with: git push gitlab <branch>"
-echo "🔍 View your project at: ${GITLAB_URL}/root/${PROJECT_NAME}"
+echo "🔍 View your project at: ${GITLAB_URL}/${PROJECT_FULL_PATH}"
