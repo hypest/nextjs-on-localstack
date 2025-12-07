@@ -147,12 +147,27 @@ if git show-ref --verify --quiet refs/heads/main; then
 fi
 git push gitlab --all
 
+# Register GitLab Runner
+echo "🏃 Registering GitLab Runner..."
+GITLAB_IP=$(docker inspect gitlab --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
+docker exec gitlab-runner gitlab-runner register \
+  --url "http://${GITLAB_IP}:80" \
+  --clone-url http://localhost:8080 \
+  --registration-token "$(docker exec gitlab gitlab-rails runner "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token")" \
+  --executor docker \
+  --docker-image alpine:latest \
+  --description "Local Docker Runner" \
+  --docker-privileged \
+  --docker-network-mode host \
+  --non-interactive
+
 echo "✅ GitLab CI/CD setup complete!"
 echo ""
 echo "📋 Summary:"
 echo "   - SSH key: ${SSH_KEY_PATH}"
 echo "   - GitLab project: ${PROJECT_NAME}"
 echo "   - Git remote: gitlab -> ${SSH_URL}"
+echo "   - GitLab Runner: Registered and ready"
 echo ""
 echo "🚀 You can now push to GitLab with: git push gitlab <branch>"
 echo "🔍 View your project at: ${GITLAB_URL}/${PROJECT_FULL_PATH}"

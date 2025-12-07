@@ -22,14 +22,12 @@ setup_gitlab:
     - ./scripts/setup-gitlab.sh
   only:
     - main
-  when: manual  # Run manually to avoid running on every push
+  when: manual # Run manually to avoid running on every push
 
 # CI checks (from ci.sh)
 validate:
   stage: validate
   image: node:18
-  services:
-    - docker:dind
   script:
     - cd hello-nextjs
     - npm ci
