@@ -43,6 +43,7 @@ validate:
     - main
     - develop
     - /^feature\/.*/
+    - base/cicd-deploy
 
 # Start LocalStack and supporting services
 setup_env:
@@ -62,6 +63,7 @@ setup_env:
     - main
     - develop
     - /^feature\/.*/
+    - base/cicd-deploy
 
 # Deploy infrastructure (adapted from deploy-infra.sh)
 deploy_infra:
@@ -90,6 +92,7 @@ deploy_infra:
     - main
     - develop
     - /^feature\/.*/
+    - base/cicd-deploy
 
 # Deploy app (adapted from deploy-app.sh)
 deploy_app:
@@ -131,6 +134,7 @@ deploy_app:
     - main
     - develop
     - /^feature\/.*/
+    - base/cicd-deploy
 
 # Deploy backend (adapted from deploy-backend.sh)
 deploy_backend:
@@ -175,6 +179,7 @@ deploy_backend:
     - main
     - develop
     - /^feature\/.*/
+    - base/cicd-deploy
 
 # Manual deploy for production (if needed)
 deploy_production_manual:
