@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+
+# Pre-commit hook: Run CI checks before committing
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+echo "🔄 Pre-commit hook: Running CI checks from $REPO_ROOT"
+
+"$REPO_ROOT/scripts/ci.sh"
+
+echo "✅ Pre-commit checks passed!"
