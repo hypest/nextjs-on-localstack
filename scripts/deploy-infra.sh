@@ -45,6 +45,12 @@ fi
 # Plan (optional, comment out for auto-apply only)
 # terraform plan -var="environment=$SANITIZED_ENV" -var="bucket_base_name=$BUCKET_BASE_NAME"
 
+# Refresh state to sync with existing infrastructure
+echo "Refreshing Terraform state..."
+terraform refresh \
+    -var="environment=$SANITIZED_ENV" \
+    -var="bucket_base_name=$BUCKET_BASE_NAME"
+
 # Apply
 echo "Applying Terraform..."
 terraform apply -auto-approve \
