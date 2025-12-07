@@ -1,0 +1,54 @@
+stages:
+  - lint
+  - build
+  - validate
+  - deploy
+
+lint:
+  stage: lint
+  image: node:18
+  script:
+    - cd hello-nextjs
+    - npm ci
+    - npm run lint
+
+build:
+  stage: build
+  image: node:18
+  script:
+    - cd hello-nextjs
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - hello-nextjs/out/
+    expire_in: 1 hour
+
+validate:
+  stage: validate
+  image: hashicorp/terraform:latest
+  script:
+    - cd infrastructure
+    - terraform init
+    - terraform validate
+
+deploy:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - |
+      if [ "$CI_COMMIT_REF_NAME" = "production" ]; then
+        ENV="prod"
+      elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
+        ENV="staging"
+      else
+        echo "No deployment for branch $CI_COMMIT_REF_NAME"
+        exit 0
+      fi
+      ./scripts/deploy-infra.sh "$ENV"
+      ./scripts/deploy-app.sh "$ENV"
+  only:
+    - production
+    - develop
