@@ -2,30 +2,34 @@
 set -euo pipefail
 
 # Auto-deploy on commit: infra + app based on current branch
+# NOTE: This hook is disabled as auto-deploy has been moved to GitLab CI/CD.
+# Uncomment the lines below if you want to re-enable local auto-deploy.
 
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-REPO_ROOT=$(git rev-parse --show-toplevel)
-echo "🔄 Post-commit hook: Branch '$BRANCH' → auto-deploy from $REPO_ROOT"
+# BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# REPO_ROOT=$(git rev-parse --show-toplevel)
+# echo "🔄 Post-commit hook: Branch '$BRANCH' → auto-deploy from $REPO_ROOT"
 
-case "$BRANCH" in
-  "production")
-    echo "   → Skipping auto-deploy for production branch to avoid production deployment"
-    exit 0
-    ;;
-  "develop")
-    ENV="staging"
-    ;;
-  *)
-    ENV="$BRANCH"
-    ;;
-esac
+# case "$BRANCH" in
+#   "production")
+#     echo "   → Skipping auto-deploy for production branch to avoid production deployment"
+#     exit 0
+#     ;;
+#   "develop")
+#     ENV="staging"
+#     ;;
+#   *)
+#     ENV="$BRANCH"
+#     ;;
+# esac
 
-echo "   → Environment: $ENV"
+# echo "   → Environment: $ENV"
 
 # Deploy infra (idempotent)
-"$REPO_ROOT/scripts/deploy-infra.sh" "$ENV"
+# "$REPO_ROOT/scripts/deploy-infra.sh" "$ENV"
 
 # Deploy app
-"$REPO_ROOT/scripts/deploy-app.sh" "$ENV"
+# "$REPO_ROOT/scripts/deploy-app.sh" "$ENV"
 
-echo "✅ Auto-deploy complete for $ENV!"
+# echo "✅ Auto-deploy complete for $ENV!"
+
+echo "Auto-deploy disabled: Moved to GitLab CI/CD."
