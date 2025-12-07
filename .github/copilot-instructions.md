@@ -92,6 +92,11 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
 
 ## Development Workflow
 
+### When committing to git
+
+1. Limit the subject line to 50 characters
+2. Devcontainer setup changes need to be in their own commits, separate to the app's
+
 ### To Add a New Feature
 
 1. Create a feature branch: `git checkout -b feature/my-feature`
