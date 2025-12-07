@@ -179,7 +179,17 @@ deploy_backend:
 # Manual deploy for production (if needed)
 deploy_production_manual:
   stage: deploy_infra
+  image: hashicorp/terraform:latest
+  dependencies:
+    - setup_env
   when: manual
+  script:
+    - cd infrastructure
+    - terraform init
+    - SANITIZED_ENV="prod"
+    - terraform workspace select "$SANITIZED_ENV" || terraform workspace new "$SANITIZED_ENV"
+    - terraform refresh -var="environment=$SANITIZED_ENV" -var="bucket_base_name=$BUCKET_BASE_NAME"
+    - terraform apply -auto-approve -var="environment=$SANITIZED_ENV" -var="bucket_base_name=$BUCKET_BASE_NAME"
   environment:
     name: production
   only:
