@@ -59,6 +59,7 @@ deploy_infra:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
     TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
+    TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
   script:
     - set -x
     - cd infrastructure
@@ -72,9 +73,10 @@ deploy_infra:
         ENV="$CI_COMMIT_REF_NAME"
       fi
       SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
+      export TF_VAR_environment="$SANITIZED_ENV"
       terraform workspace select "$SANITIZED_ENV" || terraform workspace new "$SANITIZED_ENV"
-    - terraform refresh -var="environment=$SANITIZED_ENV" -var="bucket_base_name=$BUCKET_BASE_NAME"
-    - terraform apply -auto-approve -var="environment=$SANITIZED_ENV" -var="bucket_base_name=$BUCKET_BASE_NAME"
+    - terraform refresh
+    - terraform apply -auto-approve
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
@@ -186,6 +188,8 @@ deploy_production_manual:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
     TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
+    TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
+    TF_VAR_environment: "prod"
   when: manual
   script:
     - set -x
@@ -193,8 +197,8 @@ deploy_production_manual:
     - terraform init
     - SANITIZED_ENV="prod"
     - terraform workspace select "$SANITIZED_ENV" || terraform workspace new "$SANITIZED_ENV"
-    - terraform refresh -var="environment=$SANITIZED_ENV" -var="bucket_base_name=$BUCKET_BASE_NAME"
-    - terraform apply -auto-approve -var="environment=$SANITIZED_ENV" -var="bucket_base_name=$BUCKET_BASE_NAME"
+    - terraform refresh
+    - terraform apply -auto-approve
   environment:
     name: production
   only:
