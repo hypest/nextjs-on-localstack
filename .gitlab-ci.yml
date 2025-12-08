@@ -9,7 +9,7 @@ variables:
   DOCKER_HOST: unix:///var/run/docker.sock
   BUCKET_BASE_NAME: "hello-nextjs"
   # LocalStack is already running on the host at localhost:4566
-  # Docker registry is already running on the host at localhost:5001
+  # Docker registry is already running on the host at host.docker.internal:5001
   # CI jobs access these via host network or gateway
 
 # Automated GitLab project setup (runs setup-gitlab.sh)
@@ -129,19 +129,21 @@ deploy_app:
     - base/cicd-deploy
 
 # Deploy backend (adapted from deploy-backend.sh)
-# Uses existing Docker registry at localhost:5001
+# Uses existing Docker registry at host.docker.internal:5001
 deploy_backend:
   stage: deploy_backend
   image: docker:latest
   variables:
     DOCKER_HOST: unix:///var/run/docker.sock
+    # Access Docker registry on host via Docker gateway
+    DOCKER_REGISTRY_ENDPOINT: "host.docker.internal:5001"
   dependencies:
     - deploy_infra
   script:
     - cd backend-api
     - docker build -t backend-api:latest .
-    - docker tag backend-api:latest localhost:5001/backend-api:latest
-    - docker push localhost:5001/backend-api:latest
+    - docker tag backend-api:latest "$DOCKER_REGISTRY_ENDPOINT/backend-api:latest"
+    - docker push "$DOCKER_REGISTRY_ENDPOINT/backend-api:latest"
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         ENV="prod"
@@ -165,7 +167,7 @@ deploy_backend:
       CONTAINER_NAME="backend-api-$SANITIZED_ENV"
       docker stop "$CONTAINER_NAME" || true
       docker rm "$CONTAINER_NAME" || true
-      docker run -d --name "$CONTAINER_NAME" --restart unless-stopped -p "$API_PORT:3001" -e NODE_ENV=production -e EC2_INSTANCE_ID="$INSTANCE_ID" -e ENVIRONMENT="$ENV" localhost:5001/backend-api:latest
+      docker run -d --name "$CONTAINER_NAME" --restart unless-stopped -p "$API_PORT:3001" -e NODE_ENV=production -e EC2_INSTANCE_ID="$INSTANCE_ID" -e ENVIRONMENT="$ENV" "$DOCKER_REGISTRY_ENDPOINT/backend-api:latest"
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
