@@ -31,10 +31,10 @@ validate:
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
-    # Override backend endpoint for CI
-    TF_CLI_ARGS_init: "-backend-config=endpoint=http://host.docker.internal:4566"
   before_script:
     - apt-get update && apt-get install -y wget unzip awscli
     - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_arm64.zip
@@ -67,8 +67,6 @@ deploy_infra:
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
     TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
-    # Override backend endpoint for CI
-    TF_CLI_ARGS_init: "-backend-config=endpoint=http://host.docker.internal:4566"
   before_script:
     - apk add --no-cache aws-cli
   script:
@@ -201,8 +199,6 @@ deploy_production_manual:
     TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
     TF_VAR_environment: "prod"
-    # Override backend endpoint for CI
-    TF_CLI_ARGS_init: "-backend-config=endpoint=http://host.docker.internal:4566"
   before_script:
     - apk add --no-cache aws-cli
   when: manual
