@@ -28,11 +28,19 @@ setup_gitlab:
 validate:
   stage: validate
   image: node:18
+  variables:
+    # Access LocalStack on host via Docker gateway
+    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
+    TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
+    # Override backend endpoint for CI
+    TF_CLI_ARGS_init: "-backend-config=endpoints.s3=http://host.docker.internal:4566"
   before_script:
     - apt-get update && apt-get install -y wget unzip
     - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_arm64.zip
     - unzip /tmp/terraform.zip -d /usr/local/bin/
     - chmod +x /usr/local/bin/terraform
+    - apk add --no-cache aws-cli
   script:
     - cd hello-nextjs
     - npm ci
@@ -67,11 +75,6 @@ deploy_infra:
   script:
     - set -x
     - cd infrastructure
-    # Ensure state bucket exists
-    - |
-      if ! aws s3 ls s3://terraform-state-devcontainer-localstack >/dev/null 2>&1; then
-        aws s3 mb s3://terraform-state-devcontainer-localstack
-      fi
     - terraform init
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
@@ -207,11 +210,6 @@ deploy_production_manual:
   script:
     - set -x
     - cd infrastructure
-    # Ensure state bucket exists
-    - |
-      if ! aws s3 ls s3://terraform-state-devcontainer-localstack >/dev/null 2>&1; then
-        aws s3 mb s3://terraform-state-devcontainer-localstack
-      fi
     - terraform init
     - SANITIZED_ENV="prod"
     - terraform workspace select "$SANITIZED_ENV" || terraform workspace new "$SANITIZED_ENV"

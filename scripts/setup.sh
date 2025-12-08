@@ -14,13 +14,6 @@ echo "📁 Working in: $WORKSPACE_ROOT"
 if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
     echo "🏗️ Setting up Terraform infrastructure..."
     cd "$WORKSPACE_ROOT/infrastructure"
-    
-    # Create Terraform state bucket if using S3 backend
-    if grep -q "terraform-state-devcontainer-localstack" "$WORKSPACE_ROOT/infrastructure/backend.tf" 2>/dev/null; then
-        echo "📦 Creating Terraform state bucket..."
-        awslocal s3 mb s3://terraform-state-devcontainer-localstack || echo "Bucket may already exist"
-    fi
-    
     terraform init
     terraform apply -auto-approve || echo "Terraform apply failed - check config"
     cd "$WORKSPACE_ROOT"
