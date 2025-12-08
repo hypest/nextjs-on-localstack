@@ -36,11 +36,10 @@ validate:
     # Override backend endpoint for CI
     TF_CLI_ARGS_init: "-backend-config=endpoints.s3=http://host.docker.internal:4566"
   before_script:
-    - apt-get update && apt-get install -y wget unzip
+    - apt-get update && apt-get install -y wget unzip awscli
     - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_arm64.zip
     - unzip /tmp/terraform.zip -d /usr/local/bin/
     - chmod +x /usr/local/bin/terraform
-    - apk add --no-cache aws-cli
   script:
     - cd hello-nextjs
     - npm ci
