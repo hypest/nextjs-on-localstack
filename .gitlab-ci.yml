@@ -51,7 +51,7 @@ validate:
 # Start LocalStack and supporting services
 setup_env:
   stage: setup_env
-  image: docker:24.0.5
+  image: docker:latest
   variables:
     DOCKER_HOST: unix:///var/run/docker.sock
   script:

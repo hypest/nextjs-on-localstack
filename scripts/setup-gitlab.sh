@@ -147,19 +147,28 @@ if git show-ref --verify --quiet refs/heads/main; then
 fi
 git push gitlab --all
 
+# Get runner registration token
+echo "🏃 Getting runner registration token..."
+RUNNER_TOKEN=$(docker exec gitlab gitlab-rails runner "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token" | tail -1)
+
+# Unregister any existing runners first to avoid duplicates
+echo "🧹 Cleaning up any existing runners..."
+docker exec gitlab-runner gitlab-runner unregister --all-runners 2>/dev/null || true
+
 # Register GitLab Runner
+# Note: Using --docker-network-mode gitlab-network allows job containers to use
+# Docker's embedded DNS to resolve the 'gitlab' hostname automatically
 echo "🏃 Registering GitLab Runner..."
-GITLAB_IP=$(docker inspect gitlab --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
 docker exec gitlab-runner gitlab-runner register \
-  --url "http://${GITLAB_IP}:80" \
-  --clone-url http://localhost:8080 \
-  --registration-token "$(docker exec gitlab gitlab-rails runner "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token")" \
-  --executor docker \
-  --docker-image alpine:latest \
-  --description "Local Docker Runner" \
+  --non-interactive \
+  --url "http://gitlab" \
+  --registration-token "$RUNNER_TOKEN" \
+  --executor "docker" \
+  --docker-image "docker:latest" \
   --docker-privileged \
-  --docker-network-mode host \
-  --non-interactive
+  --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" \
+  --docker-network-mode gitlab-network \
+  --description "Local Docker Runner"
 
 echo "✅ GitLab CI/CD setup complete!"
 echo ""

@@ -1,14 +1,21 @@
 version: '3.6'
 
+networks:
+  gitlab-network:
+    name: gitlab-network
+    driver: bridge
+
 services:
   gitlab:
     image: gitlab/gitlab-ce:latest
     container_name: gitlab
     restart: always
+    networks:
+      - gitlab-network
     environment:
       GITLAB_ROOT_PASSWORD: "5iveL!fe"
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://localhost:8080'
+        external_url 'http://gitlab'
         nginx['listen_port'] = 80
         gitlab_rails['gitlab_shell_ssh_port'] = 2222
     ports:
@@ -25,6 +32,8 @@ services:
     image: gitlab/gitlab-runner:latest
     container_name: gitlab-runner
     restart: always
+    networks:
+      - gitlab-network
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
