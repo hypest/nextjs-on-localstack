@@ -58,6 +58,7 @@ deploy_infra:
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
   script:
     - set -x
     - cd infrastructure
@@ -182,6 +183,7 @@ deploy_production_manual:
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
   when: manual
   script:
     - set -x

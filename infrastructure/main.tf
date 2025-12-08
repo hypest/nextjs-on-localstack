@@ -18,12 +18,12 @@ provider "aws" {
   s3_use_path_style           = true
 
   endpoints {
-    sqs      = "http://localhost:4566"
-    s3       = "http://localhost:4566"
-    dynamodb = "http://localhost:4566"
-    ec2      = "http://localhost:4566"
+    sqs      = var.localstack_endpoint
+    s3       = var.localstack_endpoint
+    dynamodb = var.localstack_endpoint
+    ec2      = var.localstack_endpoint
     # Add more services as needed, e.g.:
-    # iam     = "http://localhost:4566"
+    # iam     = var.localstack_endpoint
   }
 }
 
