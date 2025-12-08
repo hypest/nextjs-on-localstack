@@ -52,11 +52,14 @@ validate:
 # Uses existing LocalStack at host gateway (accessible from CI containers)
 deploy_infra:
   stage: deploy_infra
-  image: hashicorp/terraform:latest
+  image:
+    name: hashicorp/terraform:latest
+    entrypoint: [""]
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
   script:
+    - set -x
     - cd infrastructure
     - terraform init
     - |
@@ -173,12 +176,15 @@ deploy_backend:
 # Manual deploy for production (if needed)
 deploy_production_manual:
   stage: deploy_infra
-  image: hashicorp/terraform:latest
+  image:
+    name: hashicorp/terraform:latest
+    entrypoint: [""]
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
   when: manual
   script:
+    - set -x
     - cd infrastructure
     - terraform init
     - SANITIZED_ENV="prod"
