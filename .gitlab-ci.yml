@@ -51,9 +51,9 @@ validate:
 # Start LocalStack and supporting services
 setup_env:
   stage: setup_env
-  image: docker:latest
-  services:
-    - docker:dind
+  image: docker:24.0.5
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
   script:
     - docker network create devcontainer-network || true
     - ./scripts/start-supporting-services.sh
