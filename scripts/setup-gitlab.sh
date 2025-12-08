@@ -158,6 +158,7 @@ docker exec gitlab-runner gitlab-runner register \
   --docker-image alpine:latest \
   --description "Local Docker Runner" \
   --docker-privileged \
+  --docker-network-mode host \
   --non-interactive
 
 echo "✅ GitLab CI/CD setup complete!"

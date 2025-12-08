@@ -54,14 +54,10 @@ setup_env:
   image: docker:latest
   services:
     - docker:dind
-  variables:
-    DOCKER_HOST: tcp://docker:2376
-    DOCKER_TLS_CERTDIR: "/certs"
   script:
-    - apk add --no-cache bash
     - docker network create devcontainer-network || true
-    - bash ./scripts/start-supporting-services.sh
-    - bash ./scripts/start-localstack.sh
+    - ./scripts/start-supporting-services.sh
+    - ./scripts/start-localstack.sh
     - echo "LOCALSTACK_READY=true" > env-vars.env
   artifacts:
     reports:
