@@ -1,23 +1,23 @@
 stages:
   - setup_gitlab
   - validate
-  - setup_env
   - deploy_infra
   - deploy_app
   - deploy_backend
 
 variables:
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: unix:///var/run/docker.sock
   BUCKET_BASE_NAME: "hello-nextjs"
+  # LocalStack is already running on the host at localhost:4566
+  # Docker registry is already running on the host at localhost:5001
+  # CI jobs access these via host network or gateway
 
 # Automated GitLab project setup (runs setup-gitlab.sh)
 setup_gitlab:
   stage: setup_gitlab
   image: docker:latest
-  services:
-    - docker:dind
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
   script:
     - ./scripts/setup-gitlab.sh
   only:
@@ -48,32 +48,14 @@ validate:
     - /^feature\/.*/
     - base/cicd-deploy
 
-# Start LocalStack and supporting services
-setup_env:
-  stage: setup_env
-  image: docker:latest
-  variables:
-    DOCKER_HOST: unix:///var/run/docker.sock
-  script:
-    - docker network create devcontainer-network || true
-    - ./scripts/start-supporting-services.sh
-    - ./scripts/start-localstack.sh
-    - echo "LOCALSTACK_READY=true" > env-vars.env
-  artifacts:
-    reports:
-      dotenv: env-vars.env
-  only:
-    - main
-    - develop
-    - /^feature\/.*/
-    - base/cicd-deploy
-
 # Deploy infrastructure (adapted from deploy-infra.sh)
+# Uses existing LocalStack at host gateway (accessible from CI containers)
 deploy_infra:
   stage: deploy_infra
   image: hashicorp/terraform:latest
-  dependencies:
-    - setup_env
+  variables:
+    # Access LocalStack on host via Docker gateway
+    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
   script:
     - cd infrastructure
     - terraform init
@@ -101,6 +83,9 @@ deploy_infra:
 deploy_app:
   stage: deploy_app
   image: python:3.11
+  variables:
+    # Access LocalStack S3 on host via Docker gateway
+    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
   dependencies:
     - deploy_infra
   script:
@@ -140,11 +125,12 @@ deploy_app:
     - base/cicd-deploy
 
 # Deploy backend (adapted from deploy-backend.sh)
+# Uses existing Docker registry at localhost:5001
 deploy_backend:
   stage: deploy_backend
   image: docker:latest
-  services:
-    - docker:dind
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
   dependencies:
     - deploy_infra
   script:
@@ -188,8 +174,9 @@ deploy_backend:
 deploy_production_manual:
   stage: deploy_infra
   image: hashicorp/terraform:latest
-  dependencies:
-    - setup_env
+  variables:
+    # Access LocalStack on host via Docker gateway
+    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
   when: manual
   script:
     - cd infrastructure

@@ -158,6 +158,7 @@ docker exec gitlab-runner gitlab-runner unregister --all-runners 2>/dev/null || 
 # Register GitLab Runner
 # Note: Using --docker-network-mode gitlab-network allows job containers to use
 # Docker's embedded DNS to resolve the 'gitlab' hostname automatically
+# --docker-extra-hosts allows CI jobs to access host services (LocalStack, registry)
 echo "🏃 Registering GitLab Runner..."
 docker exec gitlab-runner gitlab-runner register \
   --non-interactive \
@@ -168,6 +169,7 @@ docker exec gitlab-runner gitlab-runner register \
   --docker-privileged \
   --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" \
   --docker-network-mode gitlab-network \
+  --docker-extra-hosts "host.docker.internal:host-gateway" \
   --description "Local Docker Runner"
 
 echo "✅ GitLab CI/CD setup complete!"
