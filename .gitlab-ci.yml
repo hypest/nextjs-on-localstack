@@ -29,10 +29,9 @@ build_ci_images:
   image: docker:latest
   services:
     - name: docker:dind
-      command: ["dockerd", "--host=tcp://0.0.0.0:2376", "--tls=false"]
+      command: ["dockerd", "--host=tcp://0.0.0.0:2376", "--tls=false", "--insecure-registry=host.docker.internal:5001"]
   variables:
     DOCKER_HOST: tcp://docker:2376
-    DOCKER_INSECURE_REGISTRIES: "host.docker.internal:5001"
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD http://host.docker.internal:5001
     - docker build -f Dockerfile.ci-node -t host.docker.internal:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG .
