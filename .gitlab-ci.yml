@@ -27,20 +27,27 @@ setup_gitlab:
 build_ci_images:
   stage: setup_gitlab
   image: docker:latest
+  services:
+    - docker:dind
   variables:
     DOCKER_HOST: unix:///var/run/docker.sock
   script:
-    - docker build -f Dockerfile.ci-node -t $CI_REGISTRY_IMAGE/ci-node:latest .
-    - docker build -f Dockerfile.ci-python -t $CI_REGISTRY_IMAGE/ci-python:latest .
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE/ci-node:latest
-    - docker push $CI_REGISTRY_IMAGE/ci-python:latest
+    - docker build -f Dockerfile.ci-node -t $CI_REGISTRY_IMAGE/ci-node:$CI_COMMIT_REF_SLUG .
+    - docker build -f Dockerfile.ci-python -t $CI_REGISTRY_IMAGE/ci-python:$CI_COMMIT_REF_SLUG .
+    - docker push $CI_REGISTRY_IMAGE/ci-node:$CI_COMMIT_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE/ci-python:$CI_COMMIT_REF_SLUG
   only:
-    - main
+    changes:
+      - Dockerfile.ci-node
+      - Dockerfile.ci-python
+      - ".gitlab-ci.yml"
 # CI checks (from ci.sh)
 validate:
   stage: validate
-  image: $CI_REGISTRY_IMAGE/ci-node:latest
+  image: $CI_REGISTRY_IMAGE/ci-node:$CI_COMMIT_REF_SLUG
+  fallback:
+    image: node:18
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
@@ -107,7 +114,9 @@ deploy_infra:
 # Deploy app (adapted from deploy-app.sh)
 deploy_app:
   stage: deploy_app
-  image: $CI_REGISTRY_IMAGE/ci-python:latest
+  image: $CI_REGISTRY_IMAGE/ci-python:$CI_COMMIT_REF_SLUG
+  fallback:
+    image: python:3.11
   variables:
     # Access LocalStack S3 on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
