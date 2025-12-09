@@ -124,6 +124,7 @@ deploy_app:
   script:
     - pip install boto3 botocore
     - cd infrastructure
+    - terraform init
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         ENV="prod"
@@ -200,6 +201,7 @@ deploy_backend:
       fi
       SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
       cd ../infrastructure
+      terraform init
       terraform workspace select "$SANITIZED_ENV"
       INSTANCE_ID=$(terraform output -raw ec2_instance_id)
       CONTAINER_NAME="backend-api-$SANITIZED_ENV"
