@@ -30,12 +30,14 @@ build_ci_images:
   image: docker:latest
   variables:
     DOCKER_HOST: unix:///var/run/docker.sock
+    DOCKER_REGISTRY_ENDPOINT: "host.docker.internal:5001"
   script:
-    - docker build -f Dockerfile.ci-node -t $CI_REGISTRY_IMAGE/ci-node:latest .
-    - docker build -f Dockerfile.ci-python -t $CI_REGISTRY_IMAGE/ci-python:latest .
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE/ci-node:latest
-    - docker push $CI_REGISTRY_IMAGE/ci-python:latest
+    - docker build -f Dockerfile.ci-node -t ci-node:latest .
+    - docker build -f Dockerfile.ci-python -t ci-python:latest .
+    - docker tag ci-node:latest $DOCKER_REGISTRY_ENDPOINT/ci-node:latest
+    - docker tag ci-python:latest $DOCKER_REGISTRY_ENDPOINT/ci-python:latest
+    - docker push $DOCKER_REGISTRY_ENDPOINT/ci-node:latest
+    - docker push $DOCKER_REGISTRY_ENDPOINT/ci-python:latest
   only:
     - main
   when: manual
@@ -43,7 +45,7 @@ build_ci_images:
 # CI checks (from ci.sh)
 validate:
   stage: validate
-  image: $CI_REGISTRY_IMAGE/ci-node:latest
+  image: $DOCKER_REGISTRY_ENDPOINT/ci-node:latest
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
@@ -110,7 +112,7 @@ deploy_infra:
 # Deploy app (adapted from deploy-app.sh)
 deploy_app:
   stage: deploy_app
-  image: $CI_REGISTRY_IMAGE/ci-python:latest
+  image: $DOCKER_REGISTRY_ENDPOINT/ci-python:latest
   variables:
     # Access LocalStack S3 on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
