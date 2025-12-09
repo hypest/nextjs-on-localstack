@@ -24,10 +24,26 @@ setup_gitlab:
     - main
   when: manual # Run manually to avoid running on every push
 
+# Build custom CI images with pre-installed tools
+build_ci_images:
+  stage: setup_gitlab
+  image: docker:latest
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
+  script:
+    - docker build -f Dockerfile.ci-node -t $CI_REGISTRY_IMAGE/ci-node:latest .
+    - docker build -f Dockerfile.ci-python -t $CI_REGISTRY_IMAGE/ci-python:latest .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/ci-node:latest
+    - docker push $CI_REGISTRY_IMAGE/ci-python:latest
+  only:
+    - main
+  when: manual
+
 # CI checks (from ci.sh)
 validate:
   stage: validate
-  image: node:18
+  image: $CI_REGISTRY_IMAGE/ci-node:latest
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
@@ -35,11 +51,6 @@ validate:
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
-  before_script:
-    - apt-get update && apt-get install -y wget unzip awscli
-    - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_arm64.zip
-    - unzip /tmp/terraform.zip -d /usr/local/bin/
-    - chmod +x /usr/local/bin/terraform
   script:
     - cd hello-nextjs
     - npm ci
@@ -99,7 +110,7 @@ deploy_infra:
 # Deploy app (adapted from deploy-app.sh)
 deploy_app:
   stage: deploy_app
-  image: python:3.11
+  image: $CI_REGISTRY_IMAGE/ci-python:latest
   variables:
     # Access LocalStack S3 on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
@@ -107,11 +118,6 @@ deploy_app:
     AWS_SECRET_ACCESS_KEY: "test"
   dependencies:
     - deploy_infra
-  before_script:
-    - apt-get update && apt-get install -y wget unzip awscli
-    - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_arm64.zip
-    - unzip /tmp/terraform.zip -d /usr/local/bin/
-    - chmod +x /usr/local/bin/terraform
   script:
     - pip install boto3 botocore
     - cd infrastructure
