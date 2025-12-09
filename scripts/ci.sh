@@ -15,8 +15,8 @@ cd "$REPO_ROOT"
 # Validate Terraform
 echo "   → Validating Terraform..."
 cd "$REPO_ROOT/infrastructure"
-AWS_ENDPOINT_URL=http://localhost:4566 terraform init
-AWS_ENDPOINT_URL=http://localhost:4566 terraform validate
+terraform init
+terraform validate
 cd "$REPO_ROOT"
 
 echo "✅ CI checks passed!"
