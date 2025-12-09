@@ -65,6 +65,8 @@ deploy_infra:
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
   before_script:
@@ -101,6 +103,8 @@ deploy_app:
   variables:
     # Access LocalStack S3 on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
   dependencies:
     - deploy_infra
   script:
@@ -148,6 +152,10 @@ deploy_backend:
     DOCKER_HOST: unix:///var/run/docker.sock
     # Access Docker registry on host via Docker gateway
     DOCKER_REGISTRY_ENDPOINT: "host.docker.internal:5001"
+    # Access LocalStack on host via Docker gateway
+    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
   dependencies:
     - deploy_infra
   script:
@@ -196,6 +204,8 @@ deploy_production_manual:
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
     TF_VAR_environment: "prod"
