@@ -8,8 +8,9 @@ stages:
 variables:
   DOCKER_HOST: unix:///var/run/docker.sock
   BUCKET_BASE_NAME: "hello-nextjs"
+  # Access Docker registry on host via Docker gateway
+  DOCKER_REGISTRY_ENDPOINT: "host.docker.internal:5001"
   # LocalStack is already running on the host at localhost:4566
-  # Docker registry is already running on the host at host.docker.internal:5001
   # CI jobs access these via host network or gateway
 
 # Automated GitLab project setup (runs setup-gitlab.sh)
@@ -30,7 +31,6 @@ build_ci_images:
   image: docker:latest
   variables:
     DOCKER_HOST: unix:///var/run/docker.sock
-    DOCKER_REGISTRY_ENDPOINT: "host.docker.internal:5001"
   script:
     - docker build -f Dockerfile.ci-node -t ci-node:latest .
     - docker build -f Dockerfile.ci-python -t ci-python:latest .
