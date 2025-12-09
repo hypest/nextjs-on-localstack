@@ -13,7 +13,7 @@ s3 = boto3.client(
 
 import sys
 bucket = sys.argv[1] if len(sys.argv) > 1 else 'hello-nextjs-dev-devcontainer-localstack'
-local_dir = '/workspaces/experimental-nextjs-app/hello-nextjs/out'
+local_dir = 'hello-nextjs/out'
 
 def upload_dir(prefix=''):
     for root, dirs, files in os.walk(local_dir):
