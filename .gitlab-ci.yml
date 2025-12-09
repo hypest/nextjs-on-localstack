@@ -107,6 +107,11 @@ deploy_app:
     AWS_SECRET_ACCESS_KEY: "test"
   dependencies:
     - deploy_infra
+  before_script:
+    - apt-get update && apt-get install -y wget unzip awscli
+    - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_arm64.zip
+    - unzip /tmp/terraform.zip -d /usr/local/bin/
+    - chmod +x /usr/local/bin/terraform
   script:
     - pip install boto3 botocore
     - cd infrastructure
@@ -158,6 +163,11 @@ deploy_backend:
     AWS_SECRET_ACCESS_KEY: "test"
   dependencies:
     - deploy_infra
+  before_script:
+    - apk add --no-cache wget unzip aws-cli
+    - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
+    - unzip /tmp/terraform.zip -d /usr/local/bin/
+    - chmod +x /usr/local/bin/terraform
   script:
     - cd backend-api
     - docker build -t backend-api:latest .
