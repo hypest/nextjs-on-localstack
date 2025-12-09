@@ -18,6 +18,9 @@ services:
         external_url 'http://gitlab'
         nginx['listen_port'] = 80
         gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        registry_external_url 'http://gitlab:5001'
+        registry['enable'] = true
+        registry_nginx['listen_port'] = 5001
     ports:
       - '8080:80'
       - '8443:443'
@@ -39,8 +42,7 @@ services:
     volumes:
       - 'gitlab_runner_config:/etc/gitlab-runner'
       - '/var/run/docker.sock:/var/run/docker.sock'
-
-volumes:
+  volumes:
   gitlab_config:
   gitlab_data:
   gitlab_logs:
