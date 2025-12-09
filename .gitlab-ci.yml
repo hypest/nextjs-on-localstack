@@ -46,8 +46,6 @@ build_ci_images:
 validate:
   stage: validate
   image: $CI_REGISTRY_IMAGE/ci-node:$CI_COMMIT_REF_SLUG
-  fallback:
-    image: node:18
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
@@ -115,8 +113,6 @@ deploy_infra:
 deploy_app:
   stage: deploy_app
   image: $CI_REGISTRY_IMAGE/ci-python:$CI_COMMIT_REF_SLUG
-  fallback:
-    image: python:3.11
   variables:
     # Access LocalStack S3 on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
