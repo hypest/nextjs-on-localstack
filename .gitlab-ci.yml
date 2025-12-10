@@ -121,6 +121,7 @@ deploy_app:
     AWS_SECRET_ACCESS_KEY: "test"
   dependencies:
     - deploy_infra
+    - deploy_backend
   script:
     - pip install boto3 botocore
     - cd infrastructure
