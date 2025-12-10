@@ -48,8 +48,8 @@ chmod 0777 "$LOCALSTACK_DIR" || true
 echo "Starting LocalStack container..."
 
 # Decide whether to mount a host directory for persistence
-DOCKER_RUN_CMD=(docker run -d --name "$CONTAINER_NAME" -p 4566:4566)
-DOCKER_RUN_CMD+=( -e SERVICES=s3,sqs,ec2,iam,autoscaling,elbv2,ecr,logs )
+DOCKER_RUN_CMD=(docker run -d --name "$CONTAINER_NAME" --network devcontainer-network -p 4566:4566)
+DOCKER_RUN_CMD+=( -e SERVICES=s3,sqs,ec2,iam,autoscaling,elbv2,ecr,logs,apigateway )
 DOCKER_RUN_CMD+=( -e S3_SKIP_TRAILERS=1 )
 DOCKER_RUN_CMD+=( -e DEBUG=1 )
 DOCKER_RUN_CMD+=( -e DOCKER_HOST=unix:///var/run/docker.sock )
