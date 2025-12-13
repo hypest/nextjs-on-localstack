@@ -29,7 +29,13 @@ build_ci_images:
   image: docker:latest
   services:
     - name: docker:dind
-      command: ["dockerd", "--host=tcp://0.0.0.0:2376", "--tls=false", "--insecure-registry=host.docker.internal:5001"]
+      command:
+        [
+          "dockerd",
+          "--host=tcp://0.0.0.0:2376",
+          "--tls=false",
+          "--insecure-registry=host.docker.internal:5001",
+        ]
   variables:
     DOCKER_HOST: tcp://docker:2376
   script:
@@ -92,13 +98,18 @@ deploy_infra:
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         ENV="prod"
+        API_PORT=3001
       elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
         ENV="staging"
+        API_PORT=3002
       else
         ENV="$CI_COMMIT_REF_NAME"
+        ENV_HASH=$(echo "$ENV" | md5sum | cut -c1-4 | tr 'a-f' '0-9' | cut -c1-4)
+        API_PORT=$((3003 + (16#${ENV_HASH:0:3} % 100)))
       fi
       SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
       export TF_VAR_environment="$SANITIZED_ENV"
+      export TF_VAR_api_port="$API_PORT"
       terraform workspace select "$SANITIZED_ENV" || terraform workspace new "$SANITIZED_ENV"
     - terraform refresh
     - terraform apply -auto-approve
@@ -128,25 +139,18 @@ deploy_app:
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         ENV="prod"
-        API_PORT=3001
-        API_SUBDOMAIN="api"
       elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
         ENV="staging"
-        API_PORT=3002
-        API_SUBDOMAIN="api-staging"
       else
         ENV="$CI_COMMIT_REF_NAME"
-        ENV_HASH=$(echo "$ENV" | md5sum | cut -c1-4 | tr 'a-f' '0-9' | cut -c1-4)
-        API_PORT=$((3003 + (16#${ENV_HASH:0:3} % 100)))
-        SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_' | tr '[:upper:]' '[:lower:]')
-        API_SUBDOMAIN="api-$SANITIZED_ENV"
       fi
       SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
       terraform workspace select "$SANITIZED_ENV"
       BUCKET_NAME=$(terraform output -raw s3_bucket_name)
+      API_GATEWAY_URL=$(terraform output -raw api_gateway_url)
     - cd ../hello-nextjs
     - npm ci --only=production
-    - API_ENDPOINT="http://$API_SUBDOMAIN.localhost.localstack.cloud:$API_PORT/api/status"
+    - API_ENDPOINT="${API_GATEWAY_URL}/status"
     - NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
     - cd ..
     - python3 deploy-nextjs.py "$BUCKET_NAME"

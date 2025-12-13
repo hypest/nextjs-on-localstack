@@ -20,3 +20,9 @@ variable "localstack_endpoint" {
   type        = string
   default     = "http://localhost:4566"
 }
+
+variable "api_port" {
+  description = "API port for backend service"
+  type        = number
+  default     = 3001
+}

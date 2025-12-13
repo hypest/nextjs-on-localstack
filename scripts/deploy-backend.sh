@@ -24,6 +24,19 @@ docker tag backend-api:latest localhost:5001/backend-api:latest
 echo "Pushing to local registry..."
 docker push localhost:5001/backend-api:latest
 
+# Assign port based on environment
+if [[ "$ENVIRONMENT" == "prod" ]]; then
+    API_PORT=3001
+elif [[ "$ENVIRONMENT" == "staging" ]]; then
+    API_PORT=3002
+else
+    # Feature branches: use hash of environment name for consistent port assignment
+    ENV_HASH=$(echo "$ENVIRONMENT" | md5sum | cut -c1-4 | tr 'a-f' '0-9' | cut -c1-4)
+    API_PORT=$((3003 + (16#${ENV_HASH:0:3} % 100)))
+fi
+
+echo "Using port $API_PORT for environment $ENVIRONMENT"
+
 # Get EC2 instance ID from Terraform (simulating metadata service)
 cd "$PROJECT_ROOT/infrastructure"
 WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
@@ -38,8 +51,8 @@ docker rm "$CONTAINER_NAME" 2>/dev/null || true
 # Run the container
 docker run -d \
   --name "$CONTAINER_NAME" \
-  --network devcontainer-network \
   --restart unless-stopped \
+  -p "$API_PORT:3001" \
   -e NODE_ENV=production \
   -e EC2_INSTANCE_ID="$INSTANCE_ID" \
   -e ENVIRONMENT="$ENVIRONMENT" \
@@ -47,4 +60,4 @@ docker run -d \
 
 echo "✅ Backend API container deployed!"
 echo "🌐 API available via API Gateway at: $(terraform output -raw api_gateway_url | sed 's/amazonaws\.com/localhost.localstack.cloud:4566/')/status"
-echo "🐳 Container: $CONTAINER_NAME"
+echo "🐳 Container: $CONTAINER_NAME (port $API_PORT)"

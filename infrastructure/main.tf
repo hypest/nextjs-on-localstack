@@ -18,10 +18,10 @@ provider "aws" {
   s3_use_path_style           = true
 
   endpoints {
-    sqs      = var.localstack_endpoint
-    s3       = var.localstack_endpoint
-    dynamodb = var.localstack_endpoint
-    ec2      = var.localstack_endpoint
+    sqs        = var.localstack_endpoint
+    s3         = var.localstack_endpoint
+    dynamodb   = var.localstack_endpoint
+    ec2        = var.localstack_endpoint
     apigateway = var.localstack_endpoint
     # Add more services as needed, e.g.:
     # iam     = var.localstack_endpoint
@@ -105,7 +105,7 @@ resource "aws_api_gateway_integration" "status_integration" {
 
   type                    = "HTTP"
   integration_http_method = "GET"
-  uri                     = "http://backend-api-${var.environment}:3001/api/status"
+  uri                     = "http://backend-api-${var.environment}:${var.api_port}/api/status"
 
   # Enable CORS
   request_parameters = {
