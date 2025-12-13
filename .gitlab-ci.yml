@@ -116,8 +116,12 @@ deploy_infra:
   before_script:
     - apk add --no-cache aws-cli
   script:
-    - set -x
-    - |
+    - set -x    - pwd
+    - ls -la
+    - ls -la scripts/
+    - file scripts/deploy-infra.sh || echo "File command not available"
+    - test -f scripts/deploy-infra.sh && echo "File exists" || echo "File does NOT exist"
+    - test -x scripts/deploy-infra.sh && echo "File is executable" || echo "File is NOT executable"    - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         DEPLOY_ENV="prod"
       elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
