@@ -25,6 +25,18 @@ echo "🚀 Deploying infrastructure for environment: $ENVIRONMENT"
 echo "   Bucket base: $BUCKET_BASE_NAME"
 echo "   Infra dir: $INFRA_DIR"
 
+# Calculate API port for this environment (must match deploy-backend.sh)
+if [[ "$ENVIRONMENT" == "prod" ]]; then
+    API_PORT=3001
+elif [[ "$ENVIRONMENT" == "staging" ]]; then
+    API_PORT=3002
+else
+    # Feature branches: use hash of environment name for consistent port assignment
+    ENV_HASH=$(echo -n "$ENVIRONMENT" | md5sum | cut -c1-4 | tr 'a-f' '0-9' | cut -c1-4)
+    API_PORT=$((3003 + (16#${ENV_HASH:0:3} % 100)))
+fi
+echo "   API port: $API_PORT"
+
 cd "$INFRA_DIR"
 
 # Initialize Terraform to ensure modules and providers are up-to-date
@@ -47,13 +59,13 @@ fi
 
 # Refresh state to sync with existing infrastructure
 echo "Refreshing Terraform state..."
-terraform refresh \
+TF_VAR_api_port="$API_PORT" terraform refresh \
     -var="environment=$SANITIZED_ENV" \
     -var="bucket_base_name=$BUCKET_BASE_NAME"
 
 # Apply
 echo "Applying Terraform..."
-terraform apply -auto-approve \
+TF_VAR_api_port="$API_PORT" terraform apply -auto-approve \
     -var="environment=$SANITIZED_ENV" \
     -var="bucket_base_name=$BUCKET_BASE_NAME"
 

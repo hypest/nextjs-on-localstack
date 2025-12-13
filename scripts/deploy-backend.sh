@@ -31,7 +31,7 @@ elif [[ "$ENVIRONMENT" == "staging" ]]; then
     API_PORT=3002
 else
     # Feature branches: use hash of environment name for consistent port assignment
-    ENV_HASH=$(echo "$ENVIRONMENT" | md5sum | cut -c1-4 | tr 'a-f' '0-9' | cut -c1-4)
+    ENV_HASH=$(echo -n "$ENVIRONMENT" | md5sum | cut -c1-4 | tr 'a-f' '0-9' | cut -c1-4)
     API_PORT=$((3003 + (16#${ENV_HASH:0:3} % 100)))
 fi
 
@@ -52,6 +52,7 @@ docker rm "$CONTAINER_NAME" 2>/dev/null || true
 docker run -d \
   --name "$CONTAINER_NAME" \
   --restart unless-stopped \
+  --network devcontainer-network \
   -p "$API_PORT:3001" \
   -e NODE_ENV=production \
   -e EC2_INSTANCE_ID="$INSTANCE_ID" \
