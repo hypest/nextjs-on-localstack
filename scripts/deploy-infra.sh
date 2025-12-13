@@ -70,7 +70,3 @@ echo "Website Endpoint: $(terraform output -raw s3_website_endpoint)"
 echo "EC2 Instance: $(terraform output -raw ec2_instance_id)"
 echo "API Endpoint: $(terraform output -raw api_endpoint)"
 echo ""
-
-# Deploy backend container (simulates EC2 user-data execution)
-echo "🐳 Deploying backend API container..."
-"$SCRIPT_DIR/deploy-backend.sh" "$ENVIRONMENT"
