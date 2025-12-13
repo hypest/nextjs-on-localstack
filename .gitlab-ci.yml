@@ -134,9 +134,6 @@ deploy_infra:
     - develop
     - /^feature\/.*/
     - base/cicd-deploy
-  # Enable debugging for troubleshooting
-  debug:
-    terminal: true
 
 # Deploy app (adapted from deploy-app.sh)
 deploy_app:
@@ -207,39 +204,6 @@ deploy_backend:
     - develop
     - /^feature\/.*/
     - base/cicd-deploy
-
-# Manual debug job for interactive troubleshooting
-debug_deploy_infra:
-  stage: deploy_infra
-  image:
-    name: hashicorp/terraform:latest
-    entrypoint: [""]
-  variables:
-    # Access LocalStack on host via Docker gateway
-    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
-    AWS_ACCESS_KEY_ID: "test"
-    AWS_SECRET_ACCESS_KEY: "test"
-    TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
-    TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
-  before_script:
-    - apk add --no-cache aws-cli
-  script:
-    - echo "🔧 Interactive debug shell for deploy_infra troubleshooting"
-    - echo "You can now run commands manually to debug the issue"
-    - echo "Try: ls -la scripts/"
-    - echo "Try: ./scripts/deploy-infra.sh"
-    - echo "Or any other debugging commands"
-    - echo ""
-    - echo "Press Ctrl+C to exit when done"
-    - sleep 3600  # Keep job running for 1 hour
-  environment:
-    name: debug-$CI_COMMIT_REF_NAME
-  only:
-    - base/cicd-deploy
-  when: manual
-  debug:
-    terminal: true
-  allow_failure: true  # Don't fail the pipeline if debug job fails
 
 # Manual deploy for production (if needed)
 deploy_production_manual:
