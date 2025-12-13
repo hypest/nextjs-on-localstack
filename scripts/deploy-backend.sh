@@ -25,16 +25,7 @@ echo "Pushing to local registry..."
 docker push localhost:5001/backend-api:latest
 
 # Assign port based on environment
-if [[ "$ENVIRONMENT" == "prod" ]]; then
-    API_PORT=3001
-elif [[ "$ENVIRONMENT" == "staging" ]]; then
-    API_PORT=3002
-else
-    # Feature branches: use hash of environment name for consistent port assignment
-    ENV_HASH=$(echo -n "$ENVIRONMENT" | md5sum | cut -c1-4 | tr 'a-f' '0-9' | cut -c1-4)
-    API_PORT=$((3003 + (16#${ENV_HASH:0:3} % 100)))
-fi
-
+API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")
 echo "Using port $API_PORT for environment $ENVIRONMENT"
 
 # Get EC2 instance ID from Terraform (simulating metadata service)

@@ -26,3 +26,9 @@ variable "api_port" {
   type        = number
   default     = 3001
 }
+
+variable "api_internal_port" {
+  description = "Internal API port for container-to-container communication"
+  type        = number
+  default     = 3001
+}

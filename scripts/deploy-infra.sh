@@ -25,16 +25,8 @@ echo "🚀 Deploying infrastructure for environment: $ENVIRONMENT"
 echo "   Bucket base: $BUCKET_BASE_NAME"
 echo "   Infra dir: $INFRA_DIR"
 
-# Calculate API port for this environment (must match deploy-backend.sh)
-if [[ "$ENVIRONMENT" == "prod" ]]; then
-    API_PORT=3001
-elif [[ "$ENVIRONMENT" == "staging" ]]; then
-    API_PORT=3002
-else
-    # Feature branches: use hash of environment name for consistent port assignment
-    ENV_HASH=$(echo -n "$ENVIRONMENT" | md5sum | cut -c1-4 | tr 'a-f' '0-9' | cut -c1-4)
-    API_PORT=$((3003 + (16#${ENV_HASH:0:3} % 100)))
-fi
+# Calculate API port for this environment
+API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")
 echo "   API port: $API_PORT"
 
 cd "$INFRA_DIR"

@@ -66,6 +66,7 @@ module "backend_ec2" {
 
   environment  = var.environment
   project_name = var.project_name
+  api_port     = var.api_port
 }
 
 # API Gateway for backend API routing
@@ -105,7 +106,7 @@ resource "aws_api_gateway_integration" "status_integration" {
 
   type                    = "HTTP"
   integration_http_method = "GET"
-  uri                     = "http://backend-api-${var.environment}:${var.api_port}/api/status"
+  uri                     = "http://backend-api-${var.environment}:${var.api_internal_port}/api/status"
 
   # Enable CORS
   request_parameters = {
@@ -179,6 +180,19 @@ resource "aws_api_gateway_deployment" "backend_api_deployment" {
   depends_on = [aws_api_gateway_integration.status_integration, aws_api_gateway_integration.status_options_integration]
 
   rest_api_id = aws_api_gateway_rest_api.backend_api.id
+
+  # Force redeployment when integration URI changes
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_integration.status_integration.uri,
+      aws_api_gateway_integration.status_options_integration.uri,
+      timestamp()
+    ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_api_gateway_stage" "backend_api_stage" {
