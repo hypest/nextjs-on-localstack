@@ -1,6 +1,5 @@
 #!/bin/bash
 set -euo pipefail
-set -x
 
 # Deploy Terraform infrastructure for a specific environment/workspace
 # Usage: ./scripts/deploy-infra.sh <environment> [bucket_base_name=hello-nextjs]
