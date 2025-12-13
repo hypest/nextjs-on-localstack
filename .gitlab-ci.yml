@@ -103,7 +103,7 @@ deploy_infra:
       else
         ENV="$CI_COMMIT_REF_NAME"
       fi
-      API_PORT=$(../scripts/calculate-port.sh "$ENV")
+      API_PORT=$(scripts/calculate-port.sh "$ENV")
       SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
       export TF_VAR_environment="$SANITIZED_ENV"
       export TF_VAR_api_port="$API_PORT"
@@ -198,7 +198,7 @@ deploy_backend:
         SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_' | tr '[:upper:]' '[:lower:]')
         API_SUBDOMAIN="api-$SANITIZED_ENV"
       fi
-      API_PORT=$(../scripts/calculate-port.sh "$ENV")
+      API_PORT=$(scripts/calculate-port.sh "$ENV")
       SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
       cd ../infrastructure
       terraform init
