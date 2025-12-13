@@ -117,6 +117,9 @@ deploy_infra:
     - apk add --no-cache aws-cli
   script:
     - set -x
+    - pwd
+    - ls -la
+    - ls -la scripts/ || echo "scripts directory not found"
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         DEPLOY_ENV="prod"
@@ -126,7 +129,7 @@ deploy_infra:
         DEPLOY_ENV="$CI_COMMIT_REF_NAME"
       fi
       export DEPLOY_ENV
-      pwd && ./scripts/deploy-infra.sh
+      ./scripts/deploy-infra.sh
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
