@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.3
+# syntax=docker/dockerfile:1.4
 FROM mcr.microsoft.com/devcontainers/base:bookworm
 
 # If a corporate TLS interception CA is provided as a build secret (id=zscaler_ca),
