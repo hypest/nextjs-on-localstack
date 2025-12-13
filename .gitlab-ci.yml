@@ -151,6 +151,8 @@ deploy_app:
     - NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
     - cd ..
     - python3 deploy-nextjs.py "$BUCKET_NAME"
+    - echo "✅ App deployed to $BUCKET_NAME"
+    - echo "🌐 Website: http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566/"
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
