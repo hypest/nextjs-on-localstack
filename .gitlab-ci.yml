@@ -126,7 +126,7 @@ deploy_infra:
         DEPLOY_ENV="$CI_COMMIT_REF_NAME"
       fi
       export DEPLOY_ENV
-      ./scripts/deploy-infra.sh
+      pwd && ./scripts/deploy-infra.sh
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
