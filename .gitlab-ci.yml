@@ -130,10 +130,10 @@ deploy_app:
   dependencies:
     - deploy_infra
   script:
-    - pip install boto3 botocore
-    - cd infrastructure
-    - terraform init
     - |
+      pip install boto3 botocore
+      cd infrastructure
+      terraform init
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         ENV="prod"
       elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
@@ -145,14 +145,14 @@ deploy_app:
       terraform workspace select "$SANITIZED_ENV"
       BUCKET_NAME=$(terraform output -raw s3_bucket_name)
       API_GATEWAY_URL=$(terraform output -raw api_gateway_url)
-    - cd ../hello-nextjs
-    - npm ci --only=production
-    - API_ENDPOINT="${API_GATEWAY_URL}/status"
-    - NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
-    - cd ..
-    - python3 deploy-nextjs.py "$BUCKET_NAME"
-    - echo "✅ App deployed to $BUCKET_NAME"
-    - echo "🌐 Website: http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566/"
+      cd ../hello-nextjs
+      npm ci --only=production
+      API_ENDPOINT="${API_GATEWAY_URL}/status"
+      NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
+      cd ..
+      python3 deploy-nextjs.py "$BUCKET_NAME"
+      echo "✅ App deployed to $BUCKET_NAME"
+      echo "🌐 Website: http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566/"
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
