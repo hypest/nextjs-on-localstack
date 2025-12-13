@@ -4,7 +4,7 @@ set -euo pipefail
 # Build and deploy backend API container for LocalStack EC2 simulation
 # This simulates what would happen in real AWS with ECR + EC2 user-data
 
-ENVIRONMENT="${1:?Error: Provide environment (e.g., prod, staging, feature/mybranch)}"
+ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="$PROJECT_ROOT/backend-api"

@@ -3,8 +3,9 @@ set -euo pipefail
 
 # Deploy Next.js static app to S3 for specific env/workspace
 # Usage: ./scripts/deploy-app.sh <environment>
+# Environment variable: DEPLOY_ENV (used if no argument provided)
 
-ENVIRONMENT="${1:?Error: Provide environment (e.g., prod, staging, feature/mybranch)}"
+ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
 BUCKET_BASE_NAME="hello-nextjs"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

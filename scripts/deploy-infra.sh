@@ -3,8 +3,9 @@ set -euo pipefail
 
 # Deploy Terraform infrastructure for a specific environment/workspace
 # Usage: ./scripts/deploy-infra.sh <environment> [bucket_base_name=hello-nextjs]
+# Environment variable: DEPLOY_ENV (used if no argument provided)
 
-ENVIRONMENT="${1:?Error: Provide environment (e.g., prod, staging, feature/mybranch)}"
+ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
 BUCKET_BASE_NAME="${2:-hello-nextjs}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -93,23 +93,16 @@ deploy_infra:
     - apk add --no-cache aws-cli
   script:
     - set -x
-    - cd infrastructure
-    - terraform init
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        ENV="prod"
+        DEPLOY_ENV="prod"
       elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-        ENV="staging"
+        DEPLOY_ENV="staging"
       else
-        ENV="$CI_COMMIT_REF_NAME"
+        DEPLOY_ENV="$CI_COMMIT_REF_NAME"
       fi
-      API_PORT=$(scripts/calculate-port.sh "$ENV")
-      SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
-      export TF_VAR_environment="$SANITIZED_ENV"
-      export TF_VAR_api_port="$API_PORT"
-      terraform workspace select "$SANITIZED_ENV" || terraform workspace new "$SANITIZED_ENV"
-    - terraform refresh
-    - terraform apply -auto-approve
+      export DEPLOY_ENV
+      ./scripts/deploy-infra.sh
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
@@ -131,28 +124,15 @@ deploy_app:
     - deploy_infra
   script:
     - |
-      pip install boto3 botocore
-      cd infrastructure
-      terraform init
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        ENV="prod"
+        DEPLOY_ENV="prod"
       elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-        ENV="staging"
+        DEPLOY_ENV="staging"
       else
-        ENV="$CI_COMMIT_REF_NAME"
+        DEPLOY_ENV="$CI_COMMIT_REF_NAME"
       fi
-      SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
-      terraform workspace select "$SANITIZED_ENV"
-      BUCKET_NAME=$(terraform output -raw s3_bucket_name)
-      API_GATEWAY_URL=$(terraform output -raw api_gateway_url)
-      cd ../hello-nextjs
-      npm ci --only=production
-      API_ENDPOINT="${API_GATEWAY_URL}/status"
-      NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
-      cd ..
-      python3 deploy-nextjs.py "$BUCKET_NAME"
-      echo "✅ App deployed to $BUCKET_NAME"
-      echo "🌐 Website: http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566/"
+      export DEPLOY_ENV
+      ./scripts/deploy-app.sh
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
@@ -188,26 +168,15 @@ deploy_backend:
     - docker push "$DOCKER_REGISTRY_ENDPOINT/backend-api:latest"
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        ENV="prod"
-        API_SUBDOMAIN="api"
+        DEPLOY_ENV="prod"
       elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-        ENV="staging"
-        API_SUBDOMAIN="api-staging"
+        DEPLOY_ENV="staging"
       else
-        ENV="$CI_COMMIT_REF_NAME"
-        SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_' | tr '[:upper:]' '[:lower:]')
-        API_SUBDOMAIN="api-$SANITIZED_ENV"
+        DEPLOY_ENV="$CI_COMMIT_REF_NAME"
       fi
-      API_PORT=$(scripts/calculate-port.sh "$ENV")
-      SANITIZED_ENV=$(echo "$ENV" | tr '/' '-' | tr ' ' '_')
-      cd ../infrastructure
-      terraform init
-      terraform workspace select "$SANITIZED_ENV"
-      INSTANCE_ID=$(terraform output -raw ec2_instance_id)
-      CONTAINER_NAME="backend-api-$SANITIZED_ENV"
-      docker stop "$CONTAINER_NAME" || true
-      docker rm "$CONTAINER_NAME" || true
-      docker run -d --name "$CONTAINER_NAME" --restart unless-stopped -p "$API_PORT:3001" -e NODE_ENV=production -e EC2_INSTANCE_ID="$INSTANCE_ID" -e ENVIRONMENT="$ENV" "$DOCKER_REGISTRY_ENDPOINT/backend-api:latest"
+      export DEPLOY_ENV
+      cd ..
+      ./scripts/deploy-backend.sh
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
