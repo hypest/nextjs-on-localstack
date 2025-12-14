@@ -22,6 +22,7 @@ services:
       - "--insecure-registry=host.docker.internal:5001"
     volumes:
       - 'gitlab_runner_docker:/var/lib/docker'
+      - 'gitlab_runner_docker_sock:/var/run'
 
   gitlab:
     image: gitlab/gitlab-ce:latest
@@ -60,7 +61,6 @@ services:
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
       - 'gitlab_runner_config:/etc/gitlab-runner'
-      - 'gitlab_runner_docker_sock:/var/run'
     volumes_from:
       - gitlab-runner-docker:rw
 
