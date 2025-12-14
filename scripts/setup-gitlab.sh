@@ -141,8 +141,10 @@ else
     git remote add gitlab "${SSH_URL}"
 fi
 
-echo "� Unshallowing repository to allow push..."
-git fetch --unshallow origin
+if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+    echo "📦 Unshallowing repository to allow push..."
+    git fetch --unshallow origin
+fi
 
 echo "�📤 Pushing all branches to GitLab..."
 if git show-ref --verify --quiet refs/heads/main; then
