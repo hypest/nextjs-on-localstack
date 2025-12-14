@@ -198,6 +198,7 @@ deploy_backend:
         DEPLOY_ENV="$CI_COMMIT_REF_NAME"
       fi
       export DEPLOY_ENV
+      cd infrastructure && terraform init && cd ..
       ./scripts/deploy-backend.sh
   environment:
     name: $CI_COMMIT_REF_NAME
