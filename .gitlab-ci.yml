@@ -38,6 +38,8 @@ build_ci_node_image:
         ]
   variables:
     DOCKER_HOST: tcp://docker:2376
+  before_script:
+    - apk add --no-cache bash
   script:
     - ./scripts/build-ci-node-image.sh
   only:
@@ -63,6 +65,8 @@ build_ci_python_image:
         ]
   variables:
     DOCKER_HOST: tcp://docker:2376
+  before_script:
+    - apk add --no-cache bash
   script:
     - ./scripts/build-ci-python-image.sh
   only:
