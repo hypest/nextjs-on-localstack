@@ -141,7 +141,10 @@ else
     git remote add gitlab "${SSH_URL}"
 fi
 
-echo "📤 Pushing all branches to GitLab..."
+echo "� Unshallowing repository to allow push..."
+git fetch --unshallow origin
+
+echo "�📤 Pushing all branches to GitLab..."
 if git show-ref --verify --quiet refs/heads/main; then
     git push gitlab main
 fi
