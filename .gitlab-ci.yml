@@ -147,8 +147,6 @@ deploy_app:
     AWS_SECRET_ACCESS_KEY: "test"
   dependencies:
     - deploy_infra
-  before_script:
-    - apk add --no-cache terraform
   script:
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
