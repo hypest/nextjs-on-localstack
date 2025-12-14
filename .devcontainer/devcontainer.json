@@ -50,7 +50,8 @@
   "forwardPorts": [
     3000,
     4566,
-    5001
+    5001,
+    8080
   ],
   "portsAttributes": {
     "3000": {
@@ -64,6 +65,10 @@
     "5001": {
       "label": "Docker Registry",
       "onAutoForward": "silent"
+    },
+    "8080": {
+      "label": "GitLab",
+      "onAutoForward": "notify"
     }
   },
   "postCreateCommand": "bash .devcontainer/scripts/install_zscaler_cert.sh || true && bash .devcontainer/scripts/post-create.sh && bash .devcontainer/scripts/one-time-setup.sh",

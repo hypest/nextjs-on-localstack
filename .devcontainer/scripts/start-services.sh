@@ -23,4 +23,12 @@ else
   echo "No start-localstack.sh found; skipping LocalStack"
 fi
 
+# Start GitLab (use existing script if present)
+if [ -f "$WORKSPACE_ROOT/scripts/start-gitlab.sh" ]; then
+  echo "Starting GitLab via start-gitlab.sh"
+  bash "$WORKSPACE_ROOT/scripts/start-gitlab.sh" || echo "start-gitlab.sh failed"
+else
+  echo "No start-gitlab.sh found; skipping GitLab"
+fi
+
 echo "All requested services started"
