@@ -92,7 +92,7 @@ if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
     echo "Detected environment: $environment"
     
     # Select or create Terraform workspace
-    terraform workspace select "$environment" || terraform workspace new "$environment" || echo "Failed to select/create workspace $environment"
+    terraform workspace select -or-create "$environment" || terraform workspace new "$environment" || echo "Failed to select/create workspace $environment"
     
     terraform plan -input=false -var environment="$environment" || echo "terraform plan failed"
     # Only auto-apply if explicitly enabled by env var
