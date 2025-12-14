@@ -6,6 +6,23 @@ networks:
     driver: bridge
 
 services:
+  # Docker daemon for GitLab Runner with insecure registry support
+  gitlab-runner-docker:
+    image: docker:dind
+    container_name: gitlab-runner-docker
+    privileged: true
+    restart: always
+    networks:
+      - gitlab-network
+    command:
+      - "dockerd"
+      - "--host=unix:///var/run/docker.sock"
+      - "--host=tcp://0.0.0.0:2376"
+      - "--tls=false"
+      - "--insecure-registry=host.docker.internal:5001"
+    volumes:
+      - 'gitlab_runner_docker:/var/lib/docker'
+
   gitlab:
     image: gitlab/gitlab-ce:latest
     container_name: gitlab
@@ -37,13 +54,20 @@ services:
     restart: always
     networks:
       - gitlab-network
+    depends_on:
+      - gitlab-runner-docker
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
       - 'gitlab_runner_config:/etc/gitlab-runner'
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - 'gitlab_runner_docker_sock:/var/run'
+    volumes_from:
+      - gitlab-runner-docker:rw
+
 volumes:
   gitlab_config:
   gitlab_data:
   gitlab_logs:
   gitlab_runner_config:
+  gitlab_runner_docker:
+  gitlab_runner_docker_sock:
