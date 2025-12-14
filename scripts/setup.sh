@@ -13,10 +13,13 @@ echo "📁 Working in: $WORKSPACE_ROOT"
 # Set up Terraform infrastructure (if infrastructure/ exists)
 if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
     echo "🏗️ Setting up Terraform infrastructure..."
-    cd "$WORKSPACE_ROOT/infrastructure"
-    terraform init
-    terraform apply -auto-approve || echo "Terraform apply failed - check config"
-    cd "$WORKSPACE_ROOT"
+    
+    # Determine environment based on current git branch
+    environment=$("$SCRIPT_DIR/get-environment-from-branch.sh")
+    echo "Detected environment: $environment"
+    
+    # Deploy infrastructure using the dedicated script
+    bash "$SCRIPT_DIR/deploy-infra.sh" "$environment" || echo "Infrastructure deployment failed - check config"
 else
     echo "⚠️  No infrastructure/ directory found, skipping Terraform setup"
 fi
