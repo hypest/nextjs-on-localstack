@@ -4,6 +4,7 @@ set -euo pipefail
 echo "Running one-time setup tasks..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_SCRIPTS_DIR="$SCRIPT_DIR/../../scripts"
 # script now lives in .devcontainer/scripts, repo root is two levels up
 WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
@@ -87,7 +88,7 @@ if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
     terraform init -input=false || echo "terraform init failed"
     
     # Determine environment based on current git branch
-    environment=$("$SCRIPT_DIR/get-environment-from-branch.sh")
+    environment=$("$PROJECT_SCRIPTS_DIR/get-environment-from-branch.sh")
     echo "Detected environment: $environment"
     
     # Select or create Terraform workspace

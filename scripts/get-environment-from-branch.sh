@@ -13,7 +13,7 @@ elif [ "$branch" = "develop" ]; then
 else
   # Sanitize branch name: replace / and spaces with -
   sanitized_branch=$(echo "$branch" | sed 's|[ /]|-|g')
-  environment="feature/$sanitized_branch"
+  environment="$sanitized_branch"
 fi
 
 echo "$environment"
