@@ -7,6 +7,7 @@
   "runArgs": [
     "--add-host=host.docker.internal:host-gateway"
   ],
+  "initializeCommand": "mkdir -p /etc/docker && echo '{\"insecure-registries\": [\"host.docker.internal:5001\"]}' > /etc/docker/daemon.json",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "moby": false,
