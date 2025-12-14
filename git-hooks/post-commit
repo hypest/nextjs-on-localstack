@@ -22,6 +22,9 @@ set -euo pipefail
 #     ;;
 # esac
 
+# Consolidated environment detection
+# ENV=$("$REPO_ROOT/scripts/get-environment-from-branch.sh")
+
 # echo "   → Environment: $ENV"
 
 # Deploy infra (idempotent)

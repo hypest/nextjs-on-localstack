@@ -123,13 +123,7 @@ deploy_infra:
     - |
       set -x
 
-      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        DEPLOY_ENV="prod"
-      elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-        DEPLOY_ENV="staging"
-      else
-        DEPLOY_ENV="$CI_COMMIT_REF_NAME"
-      fi
+      DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
       export DEPLOY_ENV
       ./scripts/deploy-infra.sh
   environment:
@@ -153,13 +147,7 @@ deploy_app:
     - deploy_infra
   script:
     - |
-      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        DEPLOY_ENV="prod"
-      elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-        DEPLOY_ENV="staging"
-      else
-        DEPLOY_ENV="$CI_COMMIT_REF_NAME"
-      fi
+      DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
       export DEPLOY_ENV
       cd infrastructure && terraform init && cd ..
       ./scripts/deploy-app.sh
@@ -194,13 +182,7 @@ deploy_backend:
   script:
     - ./scripts/build-backend-api.sh
     - |
-      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        DEPLOY_ENV="prod"
-      elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-        DEPLOY_ENV="staging"
-      else
-        DEPLOY_ENV="$CI_COMMIT_REF_NAME"
-      fi
+      DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
       export DEPLOY_ENV
       cd infrastructure && terraform init && cd ..
       ./scripts/deploy-backend.sh

@@ -85,7 +85,15 @@ if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
   fi
   if command -v terraform >/dev/null 2>&1; then
     terraform init -input=false || echo "terraform init failed"
-    terraform plan -input=false || echo "terraform plan failed"
+    
+    # Determine environment based on current git branch
+    environment=$("$SCRIPT_DIR/get-environment-from-branch.sh")
+    echo "Detected environment: $environment"
+    
+    # Select or create Terraform workspace
+    terraform workspace select "$environment" || terraform workspace new "$environment" || echo "Failed to select/create workspace $environment"
+    
+    terraform plan -input=false -var environment="$environment" || echo "terraform plan failed"
     # Only auto-apply if explicitly enabled by env var
     if [ "${DEVCONTAINER_AUTO_APPLY_TF:-false}" = "true" ]; then
       echo "DEVCONTAINER_AUTO_APPLY_TF=true: running terraform apply (non-interactive)"
