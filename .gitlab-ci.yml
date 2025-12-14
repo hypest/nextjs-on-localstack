@@ -1,5 +1,5 @@
 stages:
-  - setup_gitlab
+  - build_ci_images
   - validate
   - deploy_infra
   - deploy_app
@@ -11,21 +11,9 @@ variables:
   # LocalStack is already running on the host at localhost:4566
   # CI jobs access these via host network or gateway
 
-# Automated GitLab project setup (runs setup-gitlab.sh)
-setup_gitlab:
-  stage: setup_gitlab
-  image: docker:latest
-  variables:
-    DOCKER_HOST: unix:///var/run/docker.sock
-  script:
-    - ./scripts/setup-gitlab.sh
-  only:
-    - main
-  when: manual
-
 # Build custom CI images with pre-installed tools
 build_ci_node_image:
-  stage: setup_gitlab
+  stage: build_ci_images
   image: docker:latest
   services:
     - name: docker:dind
@@ -42,17 +30,15 @@ build_ci_node_image:
     - apk add --no-cache bash
   script:
     - ./scripts/build-ci-node-image.sh
-  only:
-    refs:
-      - main
-      - develop
-      - /^feature\/.*/
-    changes:
-      - scripts/build-ci-node-image.sh
-      - Dockerfile.ci-node
+  rules:
+    - if: '$CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"'
+      when: always
+    - changes: [scripts/build-ci-node-image.sh, Dockerfile.ci-node]
+      when: always
+    - when: never
 
 build_ci_python_image:
-  stage: setup_gitlab
+  stage: build_ci_images
   image: docker:latest
   services:
     - name: docker:dind
@@ -69,14 +55,12 @@ build_ci_python_image:
     - apk add --no-cache bash
   script:
     - ./scripts/build-ci-python-image.sh
-  only:
-    refs:
-      - main
-      - develop
-      - /^feature\/.*/
-    changes:
-      - scripts/build-ci-python-image.sh
-      - Dockerfile.ci-python
+  rules:
+    - if: '$CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"'
+      when: always
+    - changes: [scripts/build-ci-python-image.sh, Dockerfile.ci-python]
+      when: always
+    - when: never
 # CI checks (from ci.sh)
 validate:
   stage: validate
