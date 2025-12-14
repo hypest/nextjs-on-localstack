@@ -31,4 +31,12 @@ else
   echo "No start-gitlab.sh found; skipping GitLab"
 fi
 
+# Setup the GitLab project (use existing script if present)
+if [ -f "$WORKSPACE_ROOT/scripts/setup-gitlab.sh" ]; then
+  echo "Setting up the GitLab project via setup-gitlab.sh"
+  bash "$WORKSPACE_ROOT/scripts/setup-gitlab.sh" || echo "setup-gitlab.sh failed"
+else
+  echo "No setup-gitlab.sh found; skipping setting up project in GitLab"
+fi
+
 echo "All requested services started"
