@@ -7,14 +7,14 @@
   "runArgs": [
     "--add-host=host.docker.internal:host-gateway"
   ],
-  "initializeCommand": "mkdir -p /etc/docker && echo '{\"insecure-registries\": [\"host.docker.internal:5001\"]}' > /etc/docker/daemon.json",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "moby": false,
       "azureDnsAutoDetection": true,
       "installDockerBuildx": true,
       "version": "latest",
-      "dockerDashComposeVersion": "v2"
+      "dockerDashComposeVersion": "v2",
+      "insecureRegistries": ["host.docker.internal:5001"]
     },
     "ghcr.io/devcontainers/features/aws-cli:1": {},
     "ghcr.io/devcontainers/features/terraform:1": {
