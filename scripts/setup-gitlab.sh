@@ -172,10 +172,12 @@ docker exec gitlab-runner gitlab-runner register \
   --executor "docker" \
   --docker-image "docker:latest" \
   --docker-privileged \
-  --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" \
-  --docker-network-mode gitlab-network \
   --docker-extra-hosts "host.docker.internal:host-gateway" \
   --description "Local Docker Runner"
+
+# Configure runner for DinD (remove socket mount, add privileged mode)
+echo "🔧 Configuring runner for Docker-in-Docker support..."
+./scripts/configure-gitlab-runner.sh
 
 echo "✅ GitLab CI/CD setup complete!"
 echo ""
