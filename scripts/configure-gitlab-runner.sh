@@ -48,8 +48,12 @@ shutdown_timeout = 0
     volumes = ["/cache"]
     extra_hosts = ["host.docker.internal:host-gateway"]
     network_mode = "gitlab-network"
+    allowed_pull_policies = ["always", "if-not-present"]
     shm_size = 0
     network_mtu = 0
+    [runners.docker.services_tls_config]
+      insecure = true
+      insecure_skip_verify = true
 EOF'
 
 # Restart runner to apply config

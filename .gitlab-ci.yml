@@ -16,8 +16,7 @@ build_ci_node_image:
   stage: build_ci_images
   image: docker:latest
   services:
-    - name: docker:dind
-      command: ["--tls=false", "--insecure-registry=host.docker.internal:5001"]
+    - docker:dind
   variables:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: ""
@@ -51,8 +50,7 @@ build_ci_python_image:
   stage: build_ci_images
   image: docker:latest
   services:
-    - name: docker:dind
-      command: ["--tls=false", "--insecure-registry=host.docker.internal:5001"]
+    - docker:dind
   variables:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: ""
