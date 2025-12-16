@@ -110,7 +110,7 @@ validate:
     - npm run lint
     - npm run build
     - cd ../infrastructure
-    - terraform init
+    - terraform init -reconfigure
     - terraform validate
   only:
     - merge_requests
