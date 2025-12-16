@@ -202,12 +202,11 @@ deploy_backend:
     - unzip /tmp/terraform.zip -d /usr/local/bin/
     - chmod +x /usr/local/bin/terraform
   script:
-    - ./scripts/build-backend-api.sh
     - |
       git config --global --add safe.directory /workspace
       DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
       export DEPLOY_ENV
-      cd infrastructure && terraform init && cd ..
+      cd infrastructure && terraform init -reconfigure && cd ..
       ./scripts/deploy-backend.sh
   environment:
     name: $CI_COMMIT_REF_NAME
