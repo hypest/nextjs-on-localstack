@@ -49,8 +49,6 @@ shutdown_timeout = 0
     extra_hosts = ["host.docker.internal:host-gateway"]
     network_mode = "gitlab-network"
     allowed_pull_policies = ["always", "if-not-present"]
-    allowed_images = ["host.docker.internal:5001/**", "docker:*"]
-    allowed_services = ["host.docker.internal:5001/**", "docker:*"]
     shm_size = 0
     network_mtu = 0
     [runners.docker.services_tls_config]
