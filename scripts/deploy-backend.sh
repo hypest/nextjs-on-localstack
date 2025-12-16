@@ -16,13 +16,16 @@ cd "$BACKEND_DIR"
 echo "Building Docker image..."
 docker build -t backend-api:latest .
 
+# Determine registry endpoint (use environment variable or default to localhost)
+REGISTRY_ENDPOINT="${DOCKER_REGISTRY_ENDPOINT:-localhost:5001}"
+
 # Tag for local registry
 echo "Tagging for local registry..."
-docker tag backend-api:latest localhost:5001/backend-api:latest
+docker tag backend-api:latest "$REGISTRY_ENDPOINT/backend-api:latest"
 
 # Push to local registry (simulates ECR push)
 echo "Pushing to local registry..."
-docker push localhost:5001/backend-api:latest
+docker push "$REGISTRY_ENDPOINT/backend-api:latest"
 
 # Assign port based on environment
 API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")
