@@ -181,8 +181,13 @@ deploy_app:
 deploy_backend:
   stage: deploy_backend
   image: docker:latest
+  services:
+    - name: docker:dind
+      command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--tls=false", "--insecure-registry=host.docker.internal:5001"]
   variables:
-    DOCKER_HOST: unix:///var/run/docker.sock
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
     # Access Docker registry on host via Docker gateway
     DOCKER_REGISTRY_ENDPOINT: "host.docker.internal:5001"
     # Access LocalStack on host via Docker gateway
