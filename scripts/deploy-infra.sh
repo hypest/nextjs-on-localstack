@@ -11,14 +11,18 @@ BUCKET_BASE_NAME="${2:-hello-nextjs}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INFRA_DIR="$(dirname "$SCRIPT_DIR")/infrastructure"
 
-# Protection: Confirm prod/staging deployments
+# Protection: Confirm prod/staging deployments (skip in CI)
 if [[ "$ENVIRONMENT" == "prod" || "$ENVIRONMENT" == "staging" ]]; then
-    echo "⚠️  WARNING: You are about to deploy to '$ENVIRONMENT' environment!"
-    read -p "Are you sure you want to continue? (yes/no): " -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
-        echo "❌ Deployment cancelled."
-        exit 1
+    if [ -z "${GITLAB_CI:-}" ]; then
+        echo "⚠️  WARNING: You are about to deploy to '$ENVIRONMENT' environment!"
+        read -p "Are you sure you want to continue? (yes/no): " -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+            echo "❌ Deployment cancelled."
+            exit 1
+        fi
+    else
+        echo "ℹ️  CI environment detected - skipping confirmation for '$ENVIRONMENT'"
     fi
 fi
 
