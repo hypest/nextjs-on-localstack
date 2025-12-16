@@ -183,7 +183,13 @@ deploy_backend:
   image: docker:latest
   services:
     - name: docker:dind
-      command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--tls=false", "--insecure-registry=host.docker.internal:5001"]
+      command:
+        [
+          "dockerd",
+          "--host=tcp://0.0.0.0:2375",
+          "--tls=false",
+          "--insecure-registry=host.docker.internal:5001",
+        ]
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""

@@ -51,7 +51,7 @@ docker run -d \
   -e NODE_ENV=production \
   -e EC2_INSTANCE_ID="$INSTANCE_ID" \
   -e ENVIRONMENT="$ENVIRONMENT" \
-  localhost:5001/backend-api:latest
+  "$REGISTRY_ENDPOINT/backend-api:latest"
 
 echo "✅ Backend API container deployed!"
 echo "🌐 API available via API Gateway at: $(terraform output -raw api_gateway_url | sed 's/amazonaws\.com/localhost.localstack.cloud:4566/')/status"
