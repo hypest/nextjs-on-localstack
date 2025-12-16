@@ -3,8 +3,9 @@ set -euo pipefail
 
 # Get Terraform environment name from current git branch
 # Outputs the environment name to stdout
+# In CI/CD, uses CI_COMMIT_REF_NAME; locally uses git branch
 
-branch=$(git branch --show-current)
+branch="${CI_COMMIT_REF_NAME:-$(git branch --show-current)}"
 
 if [ "$branch" = "production" ]; then
   environment="prod"
