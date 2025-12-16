@@ -34,7 +34,7 @@ cd "$INFRA_DIR"
 
 # Initialize Terraform to ensure modules and providers are up-to-date
 echo "Initializing Terraform..."
-terraform init
+terraform init -reconfigure
 
 # Select or create Terraform workspace matching environment
 # Sanitize environment name for both workspace and bucket names
