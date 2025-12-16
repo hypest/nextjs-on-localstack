@@ -138,7 +138,7 @@ deploy_infra:
   script:
     - |
       set -x
-
+      git config --global --add safe.directory /workspace
       DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
       export DEPLOY_ENV
       ./scripts/deploy-infra.sh
@@ -163,6 +163,7 @@ deploy_app:
     - deploy_infra
   script:
     - |
+      git config --global --add safe.directory /workspace
       DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
       export DEPLOY_ENV
       cd infrastructure && terraform init && cd ..
@@ -198,6 +199,7 @@ deploy_backend:
   script:
     - ./scripts/build-backend-api.sh
     - |
+      git config --global --add safe.directory /workspace
       DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
       export DEPLOY_ENV
       cd infrastructure && terraform init && cd ..
