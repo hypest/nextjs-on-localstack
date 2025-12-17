@@ -84,6 +84,7 @@ This project includes GitLab CE with a **two-runner architecture**:
 See [Deploy Runner Documentation](docs/DEPLOY_RUNNER.md) for details.
 
 **GitLab Management**:
+
 ```bash
 ./scripts/start-gitlab.sh      # Start GitLab containers
 ./scripts/setup-gitlab.sh      # Configure project + runners
@@ -111,18 +112,18 @@ module "my_sqs" {
 
 ## 🔧 Useful Commands
 
-| Service | Command |
-|---------|---------|
-| **LocalStack** | `./scripts/start-localstack.sh` / `stop-localstack.sh` |
-| **Registry** | `./scripts/start-supporting-services.sh` |
-| **Terraform** | `cd infrastructure && terraform init && terraform plan` |
-| **S3** | `awslocal s3 mb s3://my-bucket` |
-| **SQS** | `awslocal sqs create-queue --queue-name my-queue` |
-| **DynamoDB** | `awslocal dynamodb create-table --table-name my-table --attribute-definitions AttributeName=pk,AttributeType=S --key-schema AttributeName=pk,KeyType=HASH` |
-| **Test** | `http GET localhost:4566/health` (httpie) |
-| **GitLab** | `./scripts/setup-gitlab.sh` (setup), `http://localhost:8080` (access) |
-| **GitLab Runners** | `docker exec gitlab-runner gitlab-runner list` (check runners) |
-| **Docker dashboard** | `docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath:/.config/jesseduffield/lazydocker lazyteam/lazydocker` <br><br> or to build it first: <br><br>`docker build -t lazyteam/lazydocker --build-arg BASE_IMAGE_BUILDER=arm64v8/golang --build-arg GOARCH=arm64 https://github.com/jesseduffield/lazydocker.git`|
+| Service              | Command                                                                                                                                                                                                                                                                                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **LocalStack**       | `./scripts/start-localstack.sh` / `stop-localstack.sh`                                                                                                                                                                                                                                                                                    |
+| **Registry**         | `./scripts/start-supporting-services.sh`                                                                                                                                                                                                                                                                                                  |
+| **Terraform**        | `cd infrastructure && terraform init && terraform plan`                                                                                                                                                                                                                                                                                   |
+| **S3**               | `awslocal s3 mb s3://my-bucket`                                                                                                                                                                                                                                                                                                           |
+| **SQS**              | `awslocal sqs create-queue --queue-name my-queue`                                                                                                                                                                                                                                                                                         |
+| **DynamoDB**         | `awslocal dynamodb create-table --table-name my-table --attribute-definitions AttributeName=pk,AttributeType=S --key-schema AttributeName=pk,KeyType=HASH`                                                                                                                                                                                |
+| **Test**             | `http GET localhost:4566/health` (httpie)                                                                                                                                                                                                                                                                                                 |
+| **GitLab**           | `./scripts/setup-gitlab.sh` (setup), `http://localhost:8080` (access)                                                                                                                                                                                                                                                                     |
+| **GitLab Runners**   | `docker exec gitlab-runner gitlab-runner list` (check runners)                                                                                                                                                                                                                                                                            |
+| **Docker dashboard** | `docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath:/.config/jesseduffield/lazydocker lazyteam/lazydocker` <br><br> or to build it first: <br><br>`docker build -t lazyteam/lazydocker --build-arg BASE_IMAGE_BUILDER=arm64v8/golang --build-arg GOARCH=arm64 https://github.com/jesseduffield/lazydocker.git` |
 
 ## 🐛 Troubleshooting
 

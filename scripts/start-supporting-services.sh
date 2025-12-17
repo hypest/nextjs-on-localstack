@@ -37,5 +37,14 @@ else
     start_or_reuse_container "local_registry" "registry:2" "--network devcontainer-network -p 5001:5000 -e REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/data -v devcontainer_local_registry_data:/data"
 fi
 
+# Connect registry to gitlab-network if it exists (for CI builds)
+if docker network ls --format '{{.Name}}' | grep -q '^gitlab-network$'; then
+    if ! docker inspect local_registry --format '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}' | grep -q "$(docker network inspect gitlab-network --format '{{.Id}}' | cut -c1-12)"; then
+        echo "🔗 Connecting registry to gitlab-network..."
+        docker network connect gitlab-network local_registry
+    fi
+fi
+
 echo "✅ Supporting services started!"
-echo "   - Registry: localhost:5001"
+echo "   - Registry: localhost:5001 (host access)"
+echo "   - Registry: local_registry:5000 (container access)"
