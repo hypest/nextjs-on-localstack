@@ -86,10 +86,16 @@ See [Deploy Runner Documentation](docs/DEPLOY_RUNNER.md) for details.
 **GitLab Management**:
 
 ```bash
-./scripts/start-gitlab.sh      # Start GitLab containers
-./scripts/setup-gitlab.sh      # Configure project + runners
-./scripts/stop-gitlab.sh       # Stop GitLab (preserves data)
-./scripts/stop-gitlab.sh --remove-data  # Stop and remove all data
+# Normal workflow (stop/start preserves data, auto-registers runners)
+./scripts/start-gitlab.sh      # Start + register runners
+./scripts/stop-gitlab.sh       # Stop + unregister runners
+
+# Fresh setup (first time or after removing data)
+./scripts/setup-gitlab.sh      # Full setup: project + SSH + runners
+
+# Nuclear option (clean slate)
+./scripts/stop-gitlab.sh --remove-data  # Remove all data
+./scripts/start-gitlab.sh               # Start fresh
 ```
 
 **Pipeline Stages**: build_ci_images → validate → deploy_infra → deploy_app → build_backend → deploy_backend

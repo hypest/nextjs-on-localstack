@@ -27,6 +27,14 @@ done
 echo "🏃 Unregistering GitLab runners..."
 docker exec gitlab-runner gitlab-runner unregister --all-runners 2>/dev/null || echo "No runners to unregister or runner not responding"
 
+# Clean up any leftover job containers
+echo "🧹 Cleaning up runner job containers..."
+docker ps -a --filter "name=runner-" --format "{{.Names}}" | while read container; do
+    if [ ! -z "$container" ]; then
+        docker rm -f "$container" 2>/dev/null || true
+    fi
+done
+
 # Stop containers using docker-compose
 echo "🐳 Stopping GitLab containers..."
 docker-compose -f "$PROJECT_ROOT/docker-compose.gitlab.yml" down
