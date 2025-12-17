@@ -3,6 +3,7 @@ stages:
   - validate
   - deploy_infra
   - deploy_app
+  - build_backend
   - deploy_backend
 
 variables:
@@ -182,7 +183,7 @@ deploy_app:
 # Deploy backend - builds in DinD, deploys via host Docker
 # Split into build and deploy stages for clarity
 build_backend:
-  stage: deploy_backend
+  stage: build_backend
   image: docker:latest
   services:
     - name: docker:dind
