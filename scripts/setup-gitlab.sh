@@ -176,8 +176,12 @@ docker exec gitlab-runner gitlab-runner register \
   --description "Local Docker Runner"
 
 # Configure runner for DinD (remove socket mount, add privileged mode)
-echo "🔧 Configuring runner for Docker-in-Docker support..."
+echo "🔧 Configuring build runner for Docker-in-Docker support..."
 ./scripts/configure-gitlab-runner.sh
+
+# Configure deploy runner with host Docker access
+echo "🔧 Configuring deploy runner with host Docker access..."
+./scripts/configure-deploy-runner.sh "$RUNNER_TOKEN"
 
 echo "✅ GitLab CI/CD setup complete!"
 echo ""
@@ -185,7 +189,8 @@ echo "📋 Summary:"
 echo "   - SSH key: ${SSH_KEY_PATH}"
 echo "   - GitLab project: ${PROJECT_NAME}"
 echo "   - Git remote: gitlab -> ${SSH_URL}"
-echo "   - GitLab Runner: Registered and ready"
+echo "   - Build Runner: Registered with DinD (isolated builds)"
+echo "   - Deploy Runner: Registered with host Docker (deployment jobs)"
 echo ""
 echo "🚀 You can now push to GitLab with: git push gitlab <branch>"
 echo "🔍 View your project at: ${GITLAB_URL}/${PROJECT_FULL_PATH}"

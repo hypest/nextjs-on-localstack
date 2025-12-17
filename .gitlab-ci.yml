@@ -154,11 +154,14 @@ deploy_infra:
 deploy_app:
   stage: deploy_app
   image: host.docker.internal:5001/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
+  tags:
+    - deploy  # Use deploy runner with host Docker access
   variables:
-    # Access LocalStack S3 on host via Docker gateway
-    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    # Access LocalStack via container name on devcontainer-network
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
+    DOCKER_HOST: "unix:///var/run/docker.sock"  # Use host Docker socket
   dependencies:
     - deploy_infra
   script:
@@ -176,9 +179,9 @@ deploy_app:
     - /^feature\/.*/
     - base/cicd-deploy
 
-# Deploy backend (adapted from deploy-backend.sh)
-# Uses existing Docker registry at host.docker.internal:5001
-deploy_backend:
+# Deploy backend - builds in DinD, deploys via host Docker
+# Split into build and deploy stages for clarity
+build_backend:
   stage: deploy_backend
   image: docker:latest
   services:
@@ -194,26 +197,37 @@ deploy_backend:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
-    # Access Docker registry on host via Docker gateway
     DOCKER_REGISTRY_ENDPOINT: "host.docker.internal:5001"
-    # Access LocalStack on host via Docker gateway
-    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - ./scripts/ci-build-backend.sh
+  only:
+    - main
+    - develop
+    - /^feature\/.*/
+    - base/cicd-deploy
+
+deploy_backend:
+  stage: deploy_backend
+  image: docker:latest
+  tags:
+    - deploy  # Use deploy runner with host Docker access
+  variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock"  # Use host Docker socket
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
   dependencies:
     - deploy_infra
+    - build_backend
   before_script:
-    - apk add --no-cache wget unzip aws-cli bash
-    - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
-    - unzip /tmp/terraform.zip -d /usr/local/bin/
+    - apk add --no-cache bash curl wget unzip
+    - wget -q -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
+    - unzip -q /tmp/terraform.zip -d /usr/local/bin/
     - chmod +x /usr/local/bin/terraform
   script:
-    - |
-      git config --global --add safe.directory /workspace
-      DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
-      export DEPLOY_ENV
-      cd infrastructure && terraform init -reconfigure && cd ..
-      ./scripts/deploy-backend.sh
+    - ./scripts/ci-deploy-backend.sh
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
