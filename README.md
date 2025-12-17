@@ -58,7 +58,8 @@ terraform apply
 .
 ├── .devcontainer/     # Dev env (Node/Terraform/AWS/LocalStack)
 ├── infrastructure/    # Terraform (provider + modules/sqs|s3|dynamodb)
-├── scripts/           # Utils (setup, localstack, registry)
+├── scripts/           # Utils (setup, localstack, registry, CI/CD)
+├── docs/              # Documentation (Deploy Runner guide)
 ├── README.md
 └── [your-app/]        # Bootstrap here (e.g., Next.js)
 ```
@@ -66,6 +67,22 @@ terraform apply
 **LocalStack Services**: SQS/S3/DynamoDB ready (add endpoints in `main.tf`).
 
 **Registry**: localhost:5001 (push/pull images for ECR sim).
+
+### GitLab CI/CD
+
+This project includes GitLab CE with a **two-runner architecture**:
+
+- **Build Runner** (DinD): Isolated image builds with Docker-in-Docker
+- **Deploy Runner** (Host Docker): Deployments with access to devcontainer-network
+
+See [Deploy Runner Documentation](docs/DEPLOY_RUNNER.md) for details.
+
+**Quick Setup**:
+```bash
+./scripts/setup-gitlab.sh  # Configures both runners
+```
+
+**Pipeline Stages**: build_ci_images → validate → deploy_infra → deploy_app → deploy_backend
 
 ## � Customize Terraform
 
@@ -93,6 +110,8 @@ module "my_sqs" {
 | **SQS** | `awslocal sqs create-queue --queue-name my-queue` |
 | **DynamoDB** | `awslocal dynamodb create-table --table-name my-table --attribute-definitions AttributeName=pk,AttributeType=S --key-schema AttributeName=pk,KeyType=HASH` |
 | **Test** | `http GET localhost:4566/health` (httpie) |
+| **GitLab** | `./scripts/setup-gitlab.sh` (setup), `http://localhost:8080` (access) |
+| **GitLab Runners** | `docker exec gitlab-runner gitlab-runner list` (check runners) |
 | **Docker dashboard** | `docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath:/.config/jesseduffield/lazydocker lazyteam/lazydocker` |
 
 ## 🐛 Troubleshooting
