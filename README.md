@@ -120,7 +120,7 @@ module "my_sqs" {
 | **Test** | `http GET localhost:4566/health` (httpie) |
 | **GitLab** | `./scripts/setup-gitlab.sh` (setup), `http://localhost:8080` (access) |
 | **GitLab Runners** | `docker exec gitlab-runner gitlab-runner list` (check runners) |
-| **Docker dashboard** | `docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath:/.config/jesseduffield/lazydocker lazyteam/lazydocker` |
+| **Docker dashboard** | `docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath:/.config/jesseduffield/lazydocker lazyteam/lazydocker` <br><br> or to build it first: <br><br>`docker build -t lazyteam/lazydocker --build-arg BASE_IMAGE_BUILDER=arm64v8/golang --build-arg GOARCH=arm64 https://github.com/jesseduffield/lazydocker.git`|
 
 ## 🐛 Troubleshooting
 
