@@ -44,7 +44,7 @@ build_ci_node_image:
   script:
     - |
       # Check if image exists in registry
-      if curl -sf --max-time 5 http://local_registry:5000/v2/root/nextjs-on-localstack/ci-node/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
+      if curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-node/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
         echo "Image already exists, skipping build"
         exit 0
       fi
@@ -85,7 +85,7 @@ build_ci_python_image:
   script:
     - |
       # Check if image exists in registry
-      if curl -sf --max-time 5 http://local_registry:5000/v2/root/nextjs-on-localstack/ci-python/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
+      if curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-python/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
         echo "Image already exists, skipping build"
         exit 0
       fi
@@ -97,7 +97,7 @@ build_ci_python_image:
 # CI checks (from ci.sh)
 validate:
   stage: validate
-  image: local_registry:5000/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
+  image: local-registry:5000/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
   variables:
     # Access LocalStack on host via Docker gateway
     AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
@@ -154,7 +154,7 @@ deploy_infra:
 # Deploy app (adapted from deploy-app.sh)
 deploy_app:
   stage: deploy_app
-  image: local_registry:5000/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
+  image: local-registry:5000/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
   tags:
     - deploy # Use deploy runner with host Docker access
   variables:
@@ -192,13 +192,13 @@ build_backend:
           "dockerd",
           "--host=tcp://0.0.0.0:2375",
           "--tls=false",
-          "--insecure-registry=local_registry:5000",
+          "--insecure-registry=local-registry:5000",
         ]
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
-    DOCKER_REGISTRY_ENDPOINT: "local_registry:5000"
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   before_script:
     - apk add --no-cache bash
   script:
