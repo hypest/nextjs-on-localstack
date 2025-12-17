@@ -14,17 +14,21 @@ A VS Code devcontainer template for local AWS development with **LocalStack**, *
 ## 🚀 Quick Start
 
 ### 1. Open in VS Code
+
 - Clone/fork this repo.
 - **Reopen in Container** (Dev Containers extension).
 
 ### 2. Setup Environment
+
 ```bash
 ./scripts/setup.sh
 ```
+
 - Starts LocalStack (4566), Docker registry (5001).
 - Runs `terraform init/apply` (empty by default; uncomment modules).
 
 ### 3. Bootstrap Your App (e.g., Next.js)
+
 ```bash
 npx create-next-app@latest my-app --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
 cd my-app
@@ -32,6 +36,7 @@ npm run dev  # http://localhost:3000
 ```
 
 ### 4. Use LocalStack
+
 ```bash
 # Health check
 curl http://localhost:4566/health
@@ -44,6 +49,7 @@ aws --endpoint-url=http://localhost:4566 s3 ls
 ```
 
 ### 5. Terraform Infra
+
 ```bash
 cd infrastructure
 terraform init
@@ -78,6 +84,7 @@ This project includes GitLab CE with a **two-runner architecture**:
 See [Deploy Runner Documentation](docs/DEPLOY_RUNNER.md) for details.
 
 **Quick Setup**:
+
 ```bash
 ./scripts/setup-gitlab.sh  # Configures both runners
 ```
@@ -91,6 +98,7 @@ See [Deploy Runner Documentation](docs/DEPLOY_RUNNER.md) for details.
 3. Outputs in `outputs.tf` / module outputs.
 
 **Example SQS**:
+
 ```
 module "my_sqs" {
   source = "./modules/sqs"
@@ -130,10 +138,12 @@ module "my_sqs" {
 ## 🎯 Use as Devcontainer Template
 
 1. **GitHub Setup**:
+
    - Push this repo.
    - Repo Settings > **Template repository** > Save.
 
 2. **VSCode**:
+
    - Cmd+Shift+P > "Dev Containers: Add Dev Container Configuration Files..."
    - Search "LocalStack" or your repo name.
    - Or clone template repo > Reopen in Container.

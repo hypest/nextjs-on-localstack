@@ -155,13 +155,13 @@ deploy_app:
   stage: deploy_app
   image: host.docker.internal:5001/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
   tags:
-    - deploy  # Use deploy runner with host Docker access
+    - deploy # Use deploy runner with host Docker access
   variables:
     # Access LocalStack via container name on devcontainer-network
     AWS_ENDPOINT_URL: "http://localstack-main:4566"
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
-    DOCKER_HOST: "unix:///var/run/docker.sock"  # Use host Docker socket
+    DOCKER_HOST: "unix:///var/run/docker.sock" # Use host Docker socket
   dependencies:
     - deploy_infra
   script:
@@ -212,9 +212,9 @@ deploy_backend:
   stage: deploy_backend
   image: docker:latest
   tags:
-    - deploy  # Use deploy runner with host Docker access
+    - deploy # Use deploy runner with host Docker access
   variables:
-    DOCKER_HOST: "unix:///var/run/docker.sock"  # Use host Docker socket
+    DOCKER_HOST: "unix:///var/run/docker.sock" # Use host Docker socket
     AWS_ENDPOINT_URL: "http://localstack-main:4566"
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"

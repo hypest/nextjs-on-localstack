@@ -37,6 +37,7 @@ Run the complete GitLab setup which configures both runners:
 ```
 
 This will:
+
 1. Set up GitLab project
 2. Register build runner with DinD
 3. Register deploy runner with host Docker access
@@ -55,12 +56,14 @@ If you need to register the deploy runner separately:
 ## Runner Configuration
 
 ### Build Runner (Default)
+
 - **Executor**: Docker with DinD
 - **Network**: gitlab-network
 - **Security**: Isolated builds, no host access
 - **Used by**: Build jobs (untagged or no specific tag)
 
 ### Deploy Runner
+
 - **Executor**: Docker with host socket
 - **Tag**: `deploy`
 - **Network**: devcontainer-network
@@ -78,12 +81,12 @@ Add the `deploy` tag to jobs that need host Docker access:
 my_deploy_job:
   stage: deploy
   tags:
-    - deploy  # Uses deploy runner
+    - deploy # Uses deploy runner
   variables:
     DOCKER_HOST: "unix:///var/run/docker.sock"
-    AWS_ENDPOINT_URL: "http://localstack-main:4566"  # Container name
+    AWS_ENDPOINT_URL: "http://localstack-main:4566" # Container name
   script:
-    - docker ps  # Sees host containers
+    - docker ps # Sees host containers
     - curl http://localstack-main:4566/_localstack/health
 ```
 
@@ -98,6 +101,7 @@ Jobs on the deploy runner use Docker container names for service discovery:
 ## Example Jobs
 
 ### Build Job (DinD)
+
 ```yaml
 build_backend:
   stage: build
@@ -113,6 +117,7 @@ build_backend:
 ```
 
 ### Deploy Job (Host Docker)
+
 ```yaml
 deploy_backend:
   stage: deploy
@@ -129,6 +134,7 @@ deploy_backend:
 ### Deploy Runner Has Elevated Privileges
 
 The deploy runner can:
+
 - ✅ Deploy containers to host
 - ✅ Access devcontainer-network
 - ✅ Manage host Docker daemon
@@ -149,11 +155,13 @@ The deploy runner can:
 ### Deploy Runner Not Available
 
 Check runner status:
+
 ```bash
 docker exec gitlab-runner gitlab-runner verify
 ```
 
 List registered runners:
+
 ```bash
 docker exec gitlab-runner gitlab-runner list
 ```
@@ -170,11 +178,13 @@ docker exec gitlab-runner gitlab-runner list
 ### Container Can't Access LocalStack
 
 Verify DNS resolution:
+
 ```bash
 docker run --rm --network devcontainer-network alpine ping -c 1 localstack-main
 ```
 
 Check LocalStack is on devcontainer-network:
+
 ```bash
 docker inspect localstack-main | grep -A5 Networks
 ```
@@ -182,6 +192,7 @@ docker inspect localstack-main | grep -A5 Networks
 ### Deploy Job Can't Access Host Docker
 
 Verify socket is mounted:
+
 ```bash
 docker exec gitlab-runner cat /etc/gitlab-runner/config.toml | grep volumes
 ```
@@ -193,11 +204,13 @@ Should show: `/var/run/docker.sock:/var/run/docker.sock`
 ### Updating Runner Configuration
 
 Edit configuration directly:
+
 ```bash
 docker exec gitlab-runner vi /etc/gitlab-runner/config.toml
 ```
 
 Or re-run configuration script:
+
 ```bash
 ./scripts/configure-deploy-runner.sh <token>
 ```
@@ -205,11 +218,13 @@ Or re-run configuration script:
 ### Removing Runners
 
 Unregister all runners:
+
 ```bash
 docker exec gitlab-runner gitlab-runner unregister --all-runners
 ```
 
 Unregister specific runner:
+
 ```bash
 docker exec gitlab-runner gitlab-runner unregister --name "Deploy Runner (Host Docker Access)"
 ```
