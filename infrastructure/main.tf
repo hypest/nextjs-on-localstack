@@ -164,6 +164,8 @@ resource "aws_api_gateway_integration_response" "status_integration_response" {
 }
 
 resource "aws_api_gateway_integration_response" "status_options_integration_response" {
+  depends_on = [aws_api_gateway_integration.status_options_integration]
+
   rest_api_id = aws_api_gateway_rest_api.backend_api.id
   resource_id = aws_api_gateway_resource.status.id
   http_method = aws_api_gateway_method.status_options.http_method
@@ -177,7 +179,12 @@ resource "aws_api_gateway_integration_response" "status_options_integration_resp
 }
 
 resource "aws_api_gateway_deployment" "backend_api_deployment" {
-  depends_on = [aws_api_gateway_integration.status_integration, aws_api_gateway_integration.status_options_integration]
+  depends_on = [
+    aws_api_gateway_integration.status_integration,
+    aws_api_gateway_integration.status_options_integration,
+    aws_api_gateway_integration_response.status_integration_response,
+    aws_api_gateway_integration_response.status_options_integration_response
+  ]
 
   rest_api_id = aws_api_gateway_rest_api.backend_api.id
 
