@@ -83,13 +83,15 @@ This project includes GitLab CE with a **two-runner architecture**:
 
 See [Deploy Runner Documentation](docs/DEPLOY_RUNNER.md) for details.
 
-**Quick Setup**:
-
+**GitLab Management**:
 ```bash
-./scripts/setup-gitlab.sh  # Configures both runners
+./scripts/start-gitlab.sh      # Start GitLab containers
+./scripts/setup-gitlab.sh      # Configure project + runners
+./scripts/stop-gitlab.sh       # Stop GitLab (preserves data)
+./scripts/stop-gitlab.sh --remove-data  # Stop and remove all data
 ```
 
-**Pipeline Stages**: build_ci_images → validate → deploy_infra → deploy_app → deploy_backend
+**Pipeline Stages**: build_ci_images → validate → deploy_infra → deploy_app → build_backend → deploy_backend
 
 ## � Customize Terraform
 

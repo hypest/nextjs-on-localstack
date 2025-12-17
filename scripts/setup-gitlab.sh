@@ -159,12 +159,11 @@ RUNNER_TOKEN=$(docker exec gitlab gitlab-rails runner "puts Gitlab::CurrentSetti
 # Unregister any existing runners first to avoid duplicates
 echo "🧹 Cleaning up any existing runners..."
 docker exec gitlab-runner gitlab-runner unregister --all-runners 2>/dev/null || true
+# Wait a moment for unregistration to complete
+sleep 2
 
-# Register GitLab Runner
-# Note: Using --docker-network-mode gitlab-network allows job containers to use
-# Docker's embedded DNS to resolve the 'gitlab' hostname automatically
-# --docker-extra-hosts allows CI jobs to access host services (LocalStack, registry)
-echo "🏃 Registering GitLab Runner..."
+# Register build runner with DinD
+echo "🏃 Registering build runner (DinD)..."
 docker exec gitlab-runner gitlab-runner register \
   --non-interactive \
   --url "http://gitlab" \
@@ -172,16 +171,35 @@ docker exec gitlab-runner gitlab-runner register \
   --executor "docker" \
   --docker-image "docker:latest" \
   --docker-privileged \
+  --docker-volumes "/cache" \
   --docker-extra-hosts "host.docker.internal:host-gateway" \
-  --description "Local Docker Runner"
+  --docker-network-mode "gitlab-network" \
+  --run-untagged="true" \
+  --locked="false" \
+  --access-level="not_protected" \
+  --description "Build Runner (DinD)"
 
-# Configure runner for DinD (remove socket mount, add privileged mode)
-echo "🔧 Configuring build runner for Docker-in-Docker support..."
-./scripts/configure-gitlab-runner.sh
+# Register deploy runner with host Docker access
+echo "🏃 Registering deploy runner (Host Docker)..."
+docker exec gitlab-runner gitlab-runner register \
+  --non-interactive \
+  --url "http://gitlab" \
+  --registration-token "$RUNNER_TOKEN" \
+  --executor "docker" \
+  --docker-image "docker:latest" \
+  --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" \
+  --docker-volumes "/workspaces/nextjs-on-localstack:/workspaces/nextjs-on-localstack" \
+  --docker-extra-hosts "host.docker.internal:host-gateway" \
+  --docker-network-mode "devcontainer-network" \
+  --tag-list "deploy,host-docker" \
+  --run-untagged="false" \
+  --locked="false" \
+  --access-level="not_protected" \
+  --description "Deploy Runner (Host Docker)"
 
-# Configure deploy runner with host Docker access
-echo "🔧 Configuring deploy runner with host Docker access..."
-./scripts/configure-deploy-runner.sh "$RUNNER_TOKEN"
+# Verify runners are registered
+echo "🔍 Verifying runners..."
+docker exec gitlab-runner gitlab-runner list
 
 echo "✅ GitLab CI/CD setup complete!"
 echo ""
@@ -189,8 +207,12 @@ echo "📋 Summary:"
 echo "   - SSH key: ${SSH_KEY_PATH}"
 echo "   - GitLab project: ${PROJECT_NAME}"
 echo "   - Git remote: gitlab -> ${SSH_URL}"
-echo "   - Build Runner: Registered with DinD (isolated builds)"
-echo "   - Deploy Runner: Registered with host Docker (deployment jobs)"
+echo "   - Build Runner: DinD on gitlab-network (untagged jobs)"
+echo "   - Deploy Runner: Host Docker on devcontainer-network (tagged: deploy)"
 echo ""
 echo "🚀 You can now push to GitLab with: git push gitlab <branch>"
 echo "🔍 View your project at: ${GITLAB_URL}/${PROJECT_FULL_PATH}"
+echo "🏃 View runners at: ${GITLAB_URL}/admin/runners"
+echo ""
+echo "⚠️  To stop GitLab: ./scripts/stop-gitlab.sh"
+echo "⚠️  To remove all data: ./scripts/stop-gitlab.sh --remove-data"
