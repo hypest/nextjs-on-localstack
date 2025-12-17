@@ -24,7 +24,7 @@ fi
 # Wait for GitLab Runner to be ready
 echo "⏳ Waiting for GitLab Runner to be ready..."
 for i in {1..30}; do
-    if docker exec gitlab-runner gitlab-runner verify 2>/dev/null | grep -q "is alive"; then
+    if docker exec gitlab-runner gitlab-runner verify 2>&1 | grep -q "is alive"; then
         echo "✅ Runner service is ready"
         break
     fi
