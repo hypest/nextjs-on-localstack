@@ -23,8 +23,9 @@ provider "aws" {
     dynamodb   = var.localstack_endpoint
     ec2        = var.localstack_endpoint
     apigateway = var.localstack_endpoint
-    # Add more services as needed, e.g.:
-    # iam     = var.localstack_endpoint
+    lambda     = var.localstack_endpoint
+    iam        = var.localstack_endpoint
+    # Add more services as needed
   }
 }
 
@@ -61,13 +62,31 @@ module "nextjs_s3" {
   project_name = var.project_name
 }
 
-module "backend_ec2" {
-  source = "./modules/ec2"
+# Backend API as Lambda function with container image
+module "backend_lambda" {
+  source = "../modules/lambda"
 
-  environment  = var.environment
-  project_name = var.project_name
-  api_port     = var.api_port
+  function_name = "backend-api-${var.environment}"
+  image_uri     = "${var.registry_endpoint}/backend-api:${var.image_tag}"
+
+  environment_variables = {
+    NODE_ENV                = "production"
+    ENVIRONMENT             = var.environment
+    AWS_LAMBDA_FUNCTION_NAME = "backend-api-${var.environment}"
+  }
+
+  timeout     = 30
+  memory_size = 512
 }
+
+# Keep EC2 module commented out - replaced by Lambda
+# module "backend_ec2" {
+#   source = "./modules/ec2"
+# 
+#   environment  = var.environment
+#   project_name = var.project_name
+#   api_port     = var.api_port
+# }
 
 # API Gateway for backend API routing
 resource "aws_api_gateway_rest_api" "backend_api" {

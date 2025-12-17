@@ -21,6 +21,18 @@ variable "localstack_endpoint" {
   default     = "http://localhost:4566"
 }
 
+variable "registry_endpoint" {
+  description = "Docker registry endpoint (e.g., localhost:5001)"
+  type        = string
+  default     = "localhost:5001"
+}
+
+variable "image_tag" {
+  description = "Docker image tag for backend API"
+  type        = string
+  default     = "latest"
+}
+
 variable "api_port" {
   description = "API port for backend service"
   type        = number
