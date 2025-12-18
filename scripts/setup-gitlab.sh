@@ -6,7 +6,7 @@ set -euo pipefail
 
 GITLAB_URL="http://localhost:8080"
 GITLAB_API_URL="${GITLAB_URL}/api/v4"
-PROJECT_NAME="nextjs-on-localstack"
+PROJECT_NAME=$(basename $(git remote get-url origin) .git)
 SSH_KEY_PATH="${HOME}/.ssh/id_ed25519_gitlab"
 
 echo "🚀 Setting up local GitLab CI/CD environment..."

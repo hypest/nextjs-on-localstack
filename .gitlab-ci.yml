@@ -8,7 +8,6 @@ stages:
 
 variables:
   DOCKER_HOST: unix:///var/run/docker.sock
-  BUCKET_BASE_NAME: "hello-nextjs"
   # LocalStack is already running on the host at localhost:4566
   # CI jobs access these via host network or gateway
 
@@ -119,7 +118,6 @@ validate:
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
-    TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
   script:
     - cd hello-nextjs
     - npm ci
@@ -148,7 +146,6 @@ deploy_infra:
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
-    TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
   before_script:
     - apk add --no-cache aws-cli bash
   script:
@@ -264,7 +261,6 @@ deploy_production_manual:
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
-    TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
     TF_VAR_environment: "prod"
   before_script:
     - apk add --no-cache aws-cli
