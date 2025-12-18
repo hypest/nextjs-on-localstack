@@ -85,7 +85,7 @@ if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
     echo "No $SCRIPT_DIR/start-services.sh found; ensure LocalStack is running before terraform plan"
   fi
   if command -v terraform >/dev/null 2>&1; then
-    terraform init -input=false || echo "terraform init failed"
+    tf_init -input=false || echo "terraform init failed"
     
     # Determine environment based on current git branch
     environment=$("$PROJECT_SCRIPTS_DIR/get-environment-from-branch.sh")

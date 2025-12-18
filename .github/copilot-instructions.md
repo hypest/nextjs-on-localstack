@@ -50,6 +50,14 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
 
 ## Key Patterns & Conventions
 
+### Configuration
+
+- `config.sh` in the project root defines all environment variables and functions
+- This file is automatically sourced in devcontainer (`postStartCommand`) and CI (`before_script`)
+- All scripts expect `config.sh` to be sourced (no manual sourcing needed)
+- Key variables: `INFRA_NAME`, `APP_NAME`, `PROJECT_ROOT`, `APP_SRC_DIR`
+- `tf_init()` function wraps `terraform init` with backend config
+
 ### Environment Management
 
 - Environments are passed as strings (e.g., `prod`, `staging`, `feature/mybranch`)
