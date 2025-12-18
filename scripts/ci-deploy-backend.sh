@@ -40,6 +40,7 @@ docker rm "$CONTAINER_NAME" 2>/dev/null || true
 
 # Run new container on devcontainer-network
 echo "🐳 Starting new container..."
+BRANCH_NAME="${CI_COMMIT_REF_NAME:-$(git branch --show-current)}"
 docker run -d \
   --name "$CONTAINER_NAME" \
   --restart unless-stopped \
@@ -48,6 +49,7 @@ docker run -d \
   -e NODE_ENV=production \
   -e EC2_INSTANCE_ID="$INSTANCE_ID" \
   -e ENVIRONMENT="$DEPLOY_ENV" \
+  -e BRANCH_NAME="$BRANCH_NAME" \
   ${REGISTRY_ENDPOINT}/backend-api:${IMAGE_TAG}
 
 # Wait for health check

@@ -44,7 +44,8 @@ echo "   API endpoint: $API_ENDPOINT"
 echo "📦 Building Next.js..."
 cd "$APP_DIR"
 npm ci --only=production  # Fast install
-NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
+BRANCH_NAME="${CI_COMMIT_REF_NAME:-$(git branch --show-current)}"
+NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" NEXT_PUBLIC_BRANCH_NAME="$BRANCH_NAME" npm run build
 echo "   Build complete: out/ ready"
 
 # Deploy via Python (boto3)

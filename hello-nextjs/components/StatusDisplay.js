@@ -31,7 +31,7 @@ export default function StatusDisplay() {
   if (loading) {
     return (
       <div style={styles.container}>
-        <h2>Backend Status</h2>
+        <h2>System Status</h2>
         <p>Loading...</p>
       </div>
     );
@@ -40,7 +40,7 @@ export default function StatusDisplay() {
   if (error) {
     return (
       <div style={styles.container}>
-        <h2>Backend Status</h2>
+        <h2>System Status</h2>
         <p style={styles.error}>Error: {error}</p>
         <p style={styles.hint}>
           Make sure the EC2 instance is running and accessible.
@@ -51,8 +51,20 @@ export default function StatusDisplay() {
 
   return (
     <div style={styles.container}>
-      <h2>Backend Status</h2>
+      <h2>System Status</h2>
       <div style={styles.statusCard}>
+        <h3>Frontend</h3>
+        <p>
+          <strong>Branch:</strong>{" "}
+          {process.env.NEXT_PUBLIC_BRANCH_NAME || "unknown"}
+        </p>
+      </div>
+
+      <div style={styles.statusCard}>
+        <h3>Backend API</h3>
+        <p>
+          <strong>Branch:</strong> {status.branch}
+        </p>
         <p>
           <strong>Instance ID:</strong> {status.instanceId}
         </p>

@@ -43,10 +43,12 @@ docker stop "$CONTAINER_NAME" 2>/dev/null || true
 docker rm "$CONTAINER_NAME" 2>/dev/null || true
 
 # Run the container
+BRANCH_NAME="${CI_COMMIT_REF_NAME:-$(git branch --show-current)}"
 docker run -d \
   --name "$CONTAINER_NAME" \
   --restart unless-stopped \
   --network devcontainer-network \
+  -e BRANCH_NAME="$BRANCH_NAME" \
   -p "$API_PORT:3001" \
   -e NODE_ENV=production \
   -e EC2_INSTANCE_ID="$INSTANCE_ID" \

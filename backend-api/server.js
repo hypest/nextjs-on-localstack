@@ -20,6 +20,7 @@ app.get("/api/status", (req, res) => {
       process.env.INSTANCE_ID ||
       "docker-container",
     environment: process.env.NODE_ENV || "development",
+    branch: process.env.BRANCH_NAME || "unknown",
     message: "Hello from EC2 Docker container on LocalStack!",
   });
 });
