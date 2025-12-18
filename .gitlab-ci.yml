@@ -12,6 +12,9 @@ variables:
   # LocalStack is already running on the host at localhost:4566
   # CI jobs access these via host network or gateway
 
+before_script:
+  - source config.sh
+
 # Build custom CI images with pre-installed tools
 build_ci_node_image:
   stage: build_ci_images
