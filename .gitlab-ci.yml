@@ -44,12 +44,17 @@ build_ci_node_image:
       done
   script:
     - |
-      # Check if image exists in registry
-      if curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-node/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
+      # Force rebuild if Dockerfile or build script changed
+      if git diff --name-only $CI_COMMIT_BEFORE_SHA...$CI_COMMIT_SHA 2>/dev/null | grep -E '(Dockerfile.ci-node|scripts/build-ci-node-image.sh)'; then
+        echo "Dockerfile or build script changed, forcing rebuild"
+        ./scripts/build-ci-node-image.sh
+      # Otherwise check if image exists in registry
+      elif curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-node/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
         echo "Image already exists, skipping build"
         exit 0
+      else
+        ./scripts/build-ci-node-image.sh
       fi
-      ./scripts/build-ci-node-image.sh
   rules:
     - changes: [scripts/build-ci-node-image.sh, Dockerfile.ci-node]
       when: always
@@ -86,12 +91,17 @@ build_ci_python_image:
       done
   script:
     - |
-      # Check if image exists in registry
-      if curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-python/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
+      # Force rebuild if Dockerfile or build script changed
+      if git diff --name-only $CI_COMMIT_BEFORE_SHA...$CI_COMMIT_SHA 2>/dev/null | grep -E '(Dockerfile.ci-python|scripts/build-ci-python-image.sh)'; then
+        echo "Dockerfile or build script changed, forcing rebuild"
+        ./scripts/build-ci-python-image.sh
+      # Otherwise check if image exists in registry
+      elif curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-python/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
         echo "Image already exists, skipping build"
         exit 0
+      else
+        ./scripts/build-ci-python-image.sh
       fi
-      ./scripts/build-ci-python-image.sh
   rules:
     - changes: [scripts/build-ci-python-image.sh, Dockerfile.ci-python]
       when: always
