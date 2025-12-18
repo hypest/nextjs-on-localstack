@@ -9,11 +9,19 @@ RUN apt-get update && apt-get install -y \
     npm \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Terraform
-RUN wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_arm64.zip \
-    && unzip /tmp/terraform.zip -d /usr/local/bin/ \
-    && chmod +x /usr/local/bin/terraform \
-    && rm /tmp/terraform.zip
+# Install Terraform (detect architecture)
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "arm64" ]; then \
+        TF_ARCH="arm64"; \
+    elif [ "$ARCH" = "amd64" ]; then \
+        TF_ARCH="amd64"; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_${TF_ARCH}.zip && \
+    unzip /tmp/terraform.zip -d /usr/local/bin/ && \
+    chmod +x /usr/local/bin/terraform && \
+    rm /tmp/terraform.zip
 
 # Default command
 CMD ["python3"]
