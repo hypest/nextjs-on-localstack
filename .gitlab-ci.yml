@@ -120,7 +120,7 @@ validate:
     - main
     - develop
     - /^feature\/.*/
-    - base/cicd-deploy
+    - /^base\/cicd-.*/
 
 # Deploy infrastructure (adapted from deploy-infra.sh)
 # Uses existing LocalStack at host gateway (accessible from CI containers)
@@ -151,7 +151,7 @@ deploy_infra:
     - main
     - develop
     - /^feature\/.*/
-    - base/cicd-deploy
+    - /^base\/cicd-.*/
 
 # Deploy app (adapted from deploy-app.sh)
 deploy_app:
@@ -180,7 +180,7 @@ deploy_app:
     - main
     - develop
     - /^feature\/.*/
-    - base/cicd-deploy
+    - /^base\/cicd-.*/
 
 # Deploy backend - builds in DinD, deploys via host Docker
 # Split into build and deploy stages for clarity
@@ -209,7 +209,7 @@ build_backend:
     - main
     - develop
     - /^feature\/.*/
-    - base/cicd-deploy
+    - /^base\/cicd-.*/
 
 deploy_backend:
   stage: deploy_backend
@@ -237,7 +237,7 @@ deploy_backend:
     - main
     - develop
     - /^feature\/.*/
-    - base/cicd-deploy
+    - /^base\/cicd-.*/
 
 # Manual deploy for production (if needed)
 deploy_production_manual:

@@ -9,6 +9,7 @@ The local Docker registry needs to be accessed from different contexts with diff
 3. **Host environment** - Direct access from devcontainer or Codespace
 
 Additionally, the behavior differs between:
+
 - **VS Code Devcontainers** - `host.docker.internal` works via `--add-host=host.docker.internal:host-gateway`
 - **GitHub Codespaces** - `host.docker.internal` may not resolve correctly in DinD contexts
 
@@ -17,6 +18,7 @@ Additionally, the behavior differs between:
 ### Registry Container Setup
 
 The registry container (`local-registry`) is configured to:
+
 - Run on **two networks**: `devcontainer-network` and `gitlab-network`
 - Expose port mapping: `5001:5000` (host port 5001 → container port 5000)
 
@@ -25,44 +27,52 @@ docker run -d --name local-registry \
   --network devcontainer-network \
   -p 5001:5000 \
   registry:2
-  
+
 # Also connect to gitlab-network for CI jobs
 docker network connect gitlab-network local-registry
 ```
 
 ### Addressing Modes
 
-| Context | Address | Reason |
-|---------|---------|--------|
-| **DinD jobs** (build) | `local-registry:5000` | Container name resolution on `gitlab-network` |
-| **Deploy jobs** (host socket) | `localhost:5001` | Host port forwarding |
-| **Image pulls** | `localhost:5001` | Runner uses host Docker daemon |
-| **Host CLI** | `localhost:5001` | Direct port access |
+| Context                       | Address               | Reason                                        |
+| ----------------------------- | --------------------- | --------------------------------------------- |
+| **DinD jobs** (build)         | `local-registry:5000` | Container name resolution on `gitlab-network` |
+| **Deploy jobs** (host socket) | `localhost:5001`      | Host port forwarding                          |
+| **Image pulls**               | `localhost:5001`      | Runner uses host Docker daemon                |
+| **Host CLI**                  | `localhost:5001`      | Direct port access                            |
 
 ### Implementation
 
 #### 1. GitLab CI Configuration
 
 **Build jobs (DinD):**
+
 ```yaml
 build_ci_node_image:
   services:
     - name: docker:dind
-      command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--tls=false",
-                "--insecure-registry=local-registry:5000"]
+      command:
+        [
+          "dockerd",
+          "--host=tcp://0.0.0.0:2375",
+          "--tls=false",
+          "--insecure-registry=local-registry:5000",
+        ]
   variables:
-    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"  # For push operations
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000" # For push operations
   script:
     - ./scripts/build-ci-node-image.sh
 ```
 
 **Image references (for pulling):**
+
 ```yaml
 validate:
   image: localhost:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
 ```
 
 **Deploy jobs (host Docker):**
+
 ```yaml
 deploy_backend:
   tags:
@@ -105,12 +115,14 @@ fi
 ## Why This Works for Both Environments
 
 ### VS Code Devcontainers
+
 - `host.docker.internal` works via devcontainer runArgs
 - But we **don't rely on it** in CI jobs
 - CI jobs use container names (`local-registry`, `localstack-main`)
 - Host-based scripts use `localhost:PORT`
 
 ### GitHub Codespaces
+
 - `host.docker.internal` may not work in DinD
 - CI jobs use container names (works identically)
 - Port forwarding to `localhost` works via Codespaces infrastructure
@@ -122,14 +134,12 @@ Both addressing modes must be configured as insecure registries:
 
 ```json
 {
-  "insecure-registries": [
-    "localhost:5001",
-    "local-registry:5000"
-  ]
+  "insecure-registries": ["localhost:5001", "local-registry:5000"]
 }
 ```
 
 Applied to:
+
 1. Devcontainer's Docker daemon (`/etc/docker/daemon.json`)
 2. DinD daemon via `--insecure-registry` flag
 3. GitLab runner configuration
@@ -137,17 +147,20 @@ Applied to:
 ## Testing
 
 ### Test DinD Access
+
 ```bash
 docker run --rm --network gitlab-network alpine:latest \
   wget -qO- http://local-registry:5000/v2/_catalog
 ```
 
 ### Test Host Access
+
 ```bash
 curl http://localhost:5001/v2/_catalog
 ```
 
 ### Test Image Push (DinD)
+
 ```bash
 docker run --rm --network gitlab-network \
   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -158,6 +171,7 @@ docker run --rm --network gitlab-network \
 ```
 
 ### Test Image Pull (Host)
+
 ```bash
 docker pull localhost:5001/test:latest
 ```
@@ -165,11 +179,13 @@ docker pull localhost:5001/test:latest
 ## Migration Notes
 
 ### Previous Approach (Broken in Codespaces)
+
 - Used `host.docker.internal:5001` for all contexts
 - Required `--add-host=host.docker.internal:host-gateway`
 - Failed in Codespaces DinD jobs
 
 ### Current Approach (Works Everywhere)
+
 - DinD jobs: `local-registry:5000` (shared network)
 - Host jobs: `localhost:5001` (port forwarding)
 - Image pulls: `localhost:5001` (runner uses host daemon)
