@@ -60,7 +60,7 @@ EOF'
 echo "🔧 Configuring Docker daemon for insecure registry..."
 docker exec gitlab-runner sh -c 'mkdir -p /etc/docker && cat > /etc/docker/daemon.json << "EOF"
 {
-  "insecure-registries": ["host.docker.internal:5001"]
+  "insecure-registries": ["host.docker.internal:5001", "local-registry:5000"]
 }
 EOF'
 
@@ -75,7 +75,7 @@ fi
 # Merge insecure-registries into daemon.json
 sudo sh -c 'cat > /etc/docker/daemon.json << "EOF"
 {
-  "insecure-registries": ["host.docker.internal:5001", "localhost:5001"]
+  "insecure-registries": ["host.docker.internal:5001", "localhost:5001", "local-registry:5000"]
 }
 EOF'
 

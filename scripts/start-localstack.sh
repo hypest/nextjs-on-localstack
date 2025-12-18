@@ -71,6 +71,14 @@ DOCKER_RUN_CMD+=( localstack/localstack:3.0 )
 
 "${DOCKER_RUN_CMD[@]}" >/dev/null
 
+# Connect LocalStack to gitlab-network if it exists (for CI builds)
+if docker network ls --format '{{.Name}}' | grep -q '^gitlab-network$'; then
+    if ! docker inspect "$CONTAINER_NAME" --format '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}' | grep -q "$(docker network inspect gitlab-network --format '{{.Id}}' | cut -c1-12)"; then
+        echo "🔗 Connecting LocalStack to gitlab-network..."
+        docker network connect gitlab-network "$CONTAINER_NAME"
+    fi
+fi
+
 # Wait for LocalStack to be ready
 echo "Waiting for LocalStack to be ready..."
 timeout=120

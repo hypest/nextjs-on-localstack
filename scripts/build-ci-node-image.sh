@@ -7,7 +7,11 @@ set -euo pipefail
 echo "🔨 Building CI Node.js image..."
 
 # Build and push the image (no auth needed for local registry)
-IMAGE_TAG="host.docker.internal:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG"
+# Default to local-registry:5000 for CI DinD environment
+# CI jobs pass DOCKER_REGISTRY_ENDPOINT from .gitlab-ci.yml
+REGISTRY_ENDPOINT="${DOCKER_REGISTRY_ENDPOINT:-local-registry:5000}"
+IMAGE_TAG="$REGISTRY_ENDPOINT/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG"
+echo "📮 Using registry: $REGISTRY_ENDPOINT"
 docker build -f Dockerfile.ci-node -t "$IMAGE_TAG" .
 docker push "$IMAGE_TAG"
 

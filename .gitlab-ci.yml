@@ -23,12 +23,13 @@ build_ci_node_image:
           "dockerd",
           "--host=tcp://0.0.0.0:2375",
           "--tls=false",
-          "--insecure-registry=host.docker.internal:5001",
+          "--insecure-registry=local-registry:5000",
         ]
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   before_script:
     - apk add --no-cache bash curl jq
     # Wait for Docker daemon to be ready
@@ -44,7 +45,7 @@ build_ci_node_image:
   script:
     - |
       # Check if image exists in registry
-      if curl -sf --max-time 5 http://host.docker.internal:5001/v2/root/nextjs-on-localstack/ci-node/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
+      if curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-node/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
         echo "Image already exists, skipping build"
         exit 0
       fi
@@ -64,12 +65,13 @@ build_ci_python_image:
           "dockerd",
           "--host=tcp://0.0.0.0:2375",
           "--tls=false",
-          "--insecure-registry=host.docker.internal:5001",
+          "--insecure-registry=local-registry:5000",
         ]
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   before_script:
     - apk add --no-cache bash curl jq
     # Wait for Docker daemon to be ready
@@ -85,7 +87,7 @@ build_ci_python_image:
   script:
     - |
       # Check if image exists in registry
-      if curl -sf --max-time 5 http://host.docker.internal:5001/v2/root/nextjs-on-localstack/ci-python/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
+      if curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-python/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
         echo "Image already exists, skipping build"
         exit 0
       fi
@@ -97,13 +99,13 @@ build_ci_python_image:
 # CI checks (from ci.sh)
 validate:
   stage: validate
-  image: host.docker.internal:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
+  image: localhost:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
   variables:
-    # Access LocalStack on host via Docker gateway
-    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    # Access LocalStack on host via container name on gitlab-network
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
-    TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
+    TF_VAR_localstack_endpoint: "http://localstack-main:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
   script:
     - cd hello-nextjs
@@ -128,11 +130,11 @@ deploy_infra:
     name: hashicorp/terraform:latest
     entrypoint: [""]
   variables:
-    # Access LocalStack on host via Docker gateway
-    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    # Access LocalStack on host via container name on gitlab-network
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
-    TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
+    TF_VAR_localstack_endpoint: "http://localstack-main:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
   before_script:
     - apk add --no-cache aws-cli bash
@@ -154,7 +156,7 @@ deploy_infra:
 # Deploy app (adapted from deploy-app.sh)
 deploy_app:
   stage: deploy_app
-  image: host.docker.internal:5001/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
+  image: localhost:5001/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
   tags:
     - deploy # Use deploy runner with host Docker access
   variables:
@@ -192,13 +194,13 @@ build_backend:
           "dockerd",
           "--host=tcp://0.0.0.0:2375",
           "--tls=false",
-          "--insecure-registry=host.docker.internal:5001",
+          "--insecure-registry=local-registry:5000",
         ]
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
-    DOCKER_REGISTRY_ENDPOINT: "host.docker.internal:5001"
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   before_script:
     - apk add --no-cache bash
   script:
@@ -244,11 +246,11 @@ deploy_production_manual:
     name: hashicorp/terraform:latest
     entrypoint: [""]
   variables:
-    # Access LocalStack on host via Docker gateway
-    AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+    # Access LocalStack on host via container name on gitlab-network
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
-    TF_VAR_localstack_endpoint: "http://host.docker.internal:4566"
+    TF_VAR_localstack_endpoint: "http://localstack-main:4566"
     TF_VAR_bucket_base_name: "$BUCKET_BASE_NAME"
     TF_VAR_environment: "prod"
   before_script:
