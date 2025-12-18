@@ -1,14 +1,14 @@
 locals {
   # S3 bucket names must be <= 63 characters
   # If full name exceeds limit, truncate environment and add hash suffix
-  full_bucket_name = "${var.bucket_name}-${var.environment}-${var.infra_name}"
+  full_bucket_name = "${var.bucket_name}-${var.environment}-${var.project_name}"
   bucket_name_length = length(local.full_bucket_name)
   
   # Create short hash of environment if needed
   env_hash = substr(md5(var.environment), 0, 8)
   
   # Use full name if under limit, otherwise use truncated version with hash
-  final_bucket_name = local.bucket_name_length <= 63 ? local.full_bucket_name : "${var.bucket_name}-${local.env_hash}-${var.infra_name}"
+  final_bucket_name = local.bucket_name_length <= 63 ? local.full_bucket_name : "${var.bucket_name}-${local.env_hash}-${var.project_name}"
 }
 
 resource "aws_s3_bucket" "this" {

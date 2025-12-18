@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-state-${var.infra_name}"
+    # bucket is set dynamically via -backend-config
     key    = "terraform.tfstate"
     region = "us-east-1"
     endpoints = {

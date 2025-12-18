@@ -15,7 +15,7 @@ cd "$REPO_ROOT"
 # Validate Terraform
 echo "   → Validating Terraform..."
 cd "$REPO_ROOT/infrastructure"
-terraform init
+tf_init
 terraform validate
 cd "$REPO_ROOT"
 
