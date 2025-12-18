@@ -34,7 +34,7 @@ provider "aws" {
 # 
 #   queue_name   = "my-app-queue"
 #   environment  = var.environment
-#   project_name = var.project_name
+#   project_name = var.infra_name
 # }
 # 
 # module "example_s3" {
@@ -42,7 +42,7 @@ provider "aws" {
 # 
 #   bucket_name  = "my-app-bucket"
 #   environment  = var.environment
-#   project_name = var.project_name
+#   project_name = var.infra_name
 # }
 # 
 # module "example_dynamodb" {
@@ -50,23 +50,23 @@ provider "aws" {
 # 
 #   table_name   = "my-app-table"
 #   environment  = var.environment
-#   project_name = var.project_name
+#   project_name = var.infra_name
 # }
 
 module "nextjs_s3" {
   source = "./modules/s3"
 
-  bucket_name  = var.bucket_base_name
-  environment  = var.environment
-  project_name = var.project_name
+  bucket_name = var.bucket_base_name
+  environment = var.environment
+  infra_name  = var.infra_name
 }
 
 module "backend_ec2" {
   source = "./modules/ec2"
 
-  environment  = var.environment
-  project_name = var.project_name
-  api_port     = var.api_port
+  environment = var.environment
+  infra_name  = var.infra_name
+  api_port    = var.api_port
 }
 
 # API Gateway for backend API routing

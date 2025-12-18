@@ -3,8 +3,8 @@ variable "environment" {
   type        = string
 }
 
-variable "project_name" {
-  description = "Project name for resource naming"
+variable "infra_name" {
+  description = "Infrastructure name for resource naming"
   type        = string
   default     = "nextjs-backend"
 }

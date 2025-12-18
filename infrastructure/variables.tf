@@ -1,9 +1,9 @@
-variable "project_name" {
-  description = "Name of the project"
+variable "infra_name" {
+  description = "Name of the infrastructure project"
   type        = string
   validation {
-    condition     = length(var.project_name) > 0
-    error_message = "Project name cannot be empty."
+    condition     = length(var.infra_name) > 0
+    error_message = "Infrastructure name cannot be empty."
   }
 }
 

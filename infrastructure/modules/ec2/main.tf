@@ -1,5 +1,5 @@
 resource "aws_security_group" "api_sg" {
-  name        = "${var.project_name}-api-sg-${var.environment}"
+  name        = "${var.infra_name}-api-sg-${var.environment}"
   description = "Security group for backend API server"
 
   ingress {
@@ -27,9 +27,9 @@ resource "aws_security_group" "api_sg" {
   }
 
   tags = {
-    Name        = "${var.project_name}-api-sg-${var.environment}"
+    Name        = "${var.infra_name}-api-sg-${var.environment}"
     Environment = var.environment
-    Project     = var.project_name
+    Project     = var.infra_name
   }
 }
 
@@ -42,8 +42,8 @@ resource "aws_instance" "api_server" {
   user_data = file("${path.module}/user-data.sh")
 
   tags = {
-    Name        = "${var.project_name}-api-${var.environment}"
+    Name        = "${var.infra_name}-api-${var.environment}"
     Environment = var.environment
-    Project     = var.project_name
+    Project     = var.infra_name
   }
 }
