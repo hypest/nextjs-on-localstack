@@ -16,7 +16,8 @@ if len(sys.argv) < 2:
     print("Usage: python3 deploy-nextjs.py <bucket_name>")
     sys.exit(1)
 bucket = sys.argv[1]
-local_dir = 'hello-nextjs/out'
+app_name = os.environ.get('APP_NAME', 'hello-nextjs')
+local_dir = f'{app_name}/out'
 
 def upload_dir(prefix=''):
     for root, dirs, files in os.walk(local_dir):

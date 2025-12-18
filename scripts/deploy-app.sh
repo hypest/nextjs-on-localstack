@@ -6,12 +6,12 @@ set -euo pipefail
 # Environment variable: DEPLOY_ENV (used if no argument provided)
 
 ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
-BUCKET_BASE_NAME="hello-nextjs"
+BUCKET_BASE_NAME="${APP_NAME:-hello-nextjs}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 INFRA_DIR="$PROJECT_ROOT/infrastructure"
-APP_DIR="$PROJECT_ROOT/hello-nextjs"
+APP_DIR="$PROJECT_ROOT/$APP_NAME"
 DEPLOY_PY="$PROJECT_ROOT/deploy-nextjs.py"  # Updated to take bucket arg
 VENV="$PROJECT_ROOT/venv-deploy"
 

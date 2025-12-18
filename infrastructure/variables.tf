@@ -15,7 +15,10 @@ variable "environment" {
 variable "bucket_base_name" {
   description = "Base name for S3 bucket (e.g., hello-nextjs)"
   type        = string
-  default     = "hello-nextjs"
+  validation {
+    condition     = length(var.bucket_base_name) > 0
+    error_message = "Bucket base name cannot be empty."
+  }
 }
 
 variable "localstack_endpoint" {

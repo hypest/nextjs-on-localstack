@@ -6,7 +6,7 @@ echo "🔍 Running CI checks from $REPO_ROOT"
 
 # Lint and build Next.js
 echo "   → Linting and building Next.js..."
-cd "$REPO_ROOT/hello-nextjs"
+cd "$REPO_ROOT/$APP_NAME"
 npm ci
 npm run lint
 npm run build
