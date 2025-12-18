@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-state-devcontainer-localstack"
+    bucket = "terraform-state-${var.project_name}"
     key    = "terraform.tfstate"
     region = "us-east-1"
     endpoints = {

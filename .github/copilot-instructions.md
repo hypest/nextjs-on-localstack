@@ -125,7 +125,7 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
 - All infrastructure is ephemeral (destroyed when LocalStack container stops unless persistence is enabled)
 - Python deployment script has hardcoded path to `/workspaces/experimental-nextjs-app/hello-nextjs/out`
 - No authentication/security - everything is public by design for local testing
-- Legacy files present: `deploy-nextjs.sh`, `bucket-policy.json`, `website-config.json` (unused, replaced by Python script and Terraform)
+- Legacy files present: `deploy-nextjs.sh`, `website-config.json` (unused, replaced by Python script and Terraform)
 
 ## Troubleshooting
 

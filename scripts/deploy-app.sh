@@ -28,14 +28,12 @@ fi
 
 echo "🚀 Deploying app for environment: $ENVIRONMENT"
 
-# Switch to env workspace & get bucket
-cd "$INFRA_DIR"
-WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
-terraform workspace select "$WORKSPACE"
-BUCKET_NAME=$(terraform output -raw s3_bucket_name)
+# Get bucket name from Terraform
+BUCKET_NAME=$(./scripts/get-bucket-name.sh "$ENVIRONMENT")
 echo "   Target bucket: $BUCKET_NAME"
 
 # Determine API endpoint for this environment
+cd "$INFRA_DIR"
 API_GATEWAY_URL=$(terraform output -raw api_gateway_url | sed 's/amazonaws\.com/localhost.localstack.cloud:4566/')
 API_ENDPOINT="${API_GATEWAY_URL}/status"
 echo "   API endpoint: $API_ENDPOINT"

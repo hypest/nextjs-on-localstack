@@ -12,7 +12,10 @@ s3 = boto3.client(
 )
 
 import sys
-bucket = sys.argv[1] if len(sys.argv) > 1 else 'hello-nextjs-dev-devcontainer-localstack'
+if len(sys.argv) < 2:
+    print("Usage: python3 deploy-nextjs.py <bucket_name>")
+    sys.exit(1)
+bucket = sys.argv[1]
 local_dir = 'hello-nextjs/out'
 
 def upload_dir(prefix=''):
