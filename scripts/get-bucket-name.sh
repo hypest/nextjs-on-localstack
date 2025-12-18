@@ -7,7 +7,7 @@ set -euo pipefail
 ENVIRONMENT="${1:?Error: Provide environment argument (e.g., prod, staging, feature/mybranch)}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
 INFRA_DIR="$PROJECT_ROOT/infrastructure"
 
 # Sanitize environment to workspace name

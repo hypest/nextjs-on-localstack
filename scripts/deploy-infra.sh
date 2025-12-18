@@ -9,7 +9,8 @@ ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLO
 BUCKET_BASE_NAME="${2:-${APP_NAME:-hello-nextjs}}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INFRA_DIR="$(dirname "$SCRIPT_DIR")/infrastructure"
+PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
+INFRA_DIR="$PROJECT_ROOT/infrastructure"
 
 # Protection: Confirm prod/staging deployments (skip in CI)
 if [[ "$ENVIRONMENT" == "prod" || "$ENVIRONMENT" == "staging" ]]; then

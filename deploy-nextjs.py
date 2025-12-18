@@ -16,8 +16,8 @@ if len(sys.argv) < 2:
     print("Usage: python3 deploy-nextjs.py <bucket_name>")
     sys.exit(1)
 bucket = sys.argv[1]
-app_name = os.environ.get('APP_NAME', 'hello-nextjs')
-local_dir = f'{app_name}/out'
+app_src_dir = os.environ.get('APP_SRC_DIR', 'the-app-src-dir-var-is-not-configured')
+local_dir = f'{app_src_dir}/out'
 
 def upload_dir(prefix=''):
     for root, dirs, files in os.walk(local_dir):

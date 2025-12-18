@@ -1,12 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO_ROOT=$(git rev-parse --show-toplevel)
+REPO_ROOT="${PROJECT_ROOT:-$(git rev-parse --show-toplevel)}"
 echo "🔍 Running CI checks from $REPO_ROOT"
 
 # Lint and build Next.js
 echo "   → Linting and building Next.js..."
-cd "$REPO_ROOT/$APP_NAME"
+cd "$APP_SRC_DIR"
 npm ci
 npm run lint
 npm run build
