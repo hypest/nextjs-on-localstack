@@ -62,7 +62,7 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
 
 - Environments are passed as strings (e.g., `prod`, `staging`, `feature/mybranch`)
 - Branch names with slashes/spaces are sanitized to Terraform workspace names (e.g., `feature/mybranch` → `feature-mybranch`)
-- S3 bucket naming: `{bucket_base_name}-{environment}-{project_name}` (e.g., `hello-nextjs-prod-devcontainer-localstack`)
+- S3 bucket naming: `{bucket_base_name}-{environment}-{infra_name}` (e.g., `hello-nextjs-prod-devcontainer-localstack`)
 
 ### LocalStack Configuration
 
