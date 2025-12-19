@@ -11,9 +11,6 @@ variables:
   # LocalStack is already running on the host at localhost:4566
   # CI jobs access these via host network or gateway
 
-before_script:
-  - source config.sh
-
 # Build custom CI images with pre-installed tools
 build_ci_node_image:
   stage: build_ci_images
@@ -33,6 +30,7 @@ build_ci_node_image:
     DOCKER_DRIVER: overlay2
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   before_script:
+    - source config.sh
     - apk add --no-cache bash curl jq
     # Wait for Docker daemon to be ready
     - |
@@ -80,6 +78,7 @@ build_ci_python_image:
     DOCKER_DRIVER: overlay2
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   before_script:
+    - source config.sh
     - apk add --no-cache bash curl jq
     # Wait for Docker daemon to be ready
     - |
@@ -112,6 +111,8 @@ build_ci_python_image:
 validate:
   stage: validate
   image: localhost:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
+  before_script:
+    - source config.sh
   variables:
     # Access LocalStack on host via container name on gitlab-network
     AWS_ENDPOINT_URL: "http://localstack-main:4566"
@@ -147,6 +148,7 @@ deploy_infra:
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
   before_script:
+    - source config.sh
     - apk add --no-cache aws-cli bash
   script:
     - |
@@ -167,6 +169,8 @@ deploy_infra:
 deploy_app:
   stage: deploy_app
   image: localhost:5001/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
+  before_script:
+    - source config.sh
   tags:
     - deploy # Use deploy runner with host Docker access
   variables:
@@ -212,6 +216,7 @@ build_backend:
     DOCKER_DRIVER: overlay2
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   before_script:
+    - source config.sh
     - apk add --no-cache bash
   script:
     - ./scripts/ci-build-backend.sh
@@ -235,6 +240,7 @@ deploy_backend:
     - deploy_infra
     - build_backend
   before_script:
+    - source config.sh
     - apk add --no-cache bash curl wget unzip
     - wget -q -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
     - unzip -q /tmp/terraform.zip -d /usr/local/bin/
@@ -263,6 +269,7 @@ deploy_production_manual:
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
     TF_VAR_environment: "prod"
   before_script:
+    - source config.sh
     - apk add --no-cache aws-cli
   when: manual
   script:
