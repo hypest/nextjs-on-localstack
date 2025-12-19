@@ -124,7 +124,7 @@ validate:
     - npm run lint
     - npm run build
     - cd ../infrastructure
-    - tf_init -reconfigure
+    - ../scripts/terraform-init -reconfigure
     - terraform validate
   only:
     - merge_requests
@@ -182,7 +182,7 @@ deploy_app:
       git config --global --add safe.directory /workspace
       DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
       export DEPLOY_ENV
-      cd infrastructure && tf_init && cd ..
+      cd infrastructure && ../scripts/terraform-init && cd ..
       ./scripts/deploy-app.sh
   environment:
     name: $CI_COMMIT_REF_NAME
@@ -268,7 +268,7 @@ deploy_production_manual:
   script:
     - set -x
     - cd infrastructure
-    - tf_init
+    - ../scripts/terraform-init
     - SANITIZED_ENV="prod"
     - terraform workspace select "$SANITIZED_ENV" || terraform workspace new "$SANITIZED_ENV"
     - terraform refresh

@@ -25,7 +25,7 @@ echo "🔌 Using port: $API_PORT"
 
 # Get instance ID from Terraform
 cd "$PROJECT_ROOT/infrastructure"
-tf_init -reconfigure >/dev/null 2>&1
+$SCRIPT_DIR/terraform-init -reconfigure >/dev/null 2>&1
 
 WORKSPACE=$(echo "$DEPLOY_ENV" | tr '/' '-' | tr ' ' '_')
 terraform workspace select "$WORKSPACE" 2>/dev/null || terraform workspace new "$WORKSPACE"

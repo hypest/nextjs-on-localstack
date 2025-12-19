@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+# Run terraform init with backend config
+terraform init "$@" "$TF_BACKEND_CONFIG"

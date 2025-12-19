@@ -60,7 +60,7 @@ jobs:
           terraform_version: "1.5.0"
 
       - name: Terraform Init
-        run: cd infrastructure && source ../config.sh && tf_init
+        run: cd infrastructure && source ../config.sh && ../scripts/terraform-init
 
       - name: Terraform Validate
         run: cd infrastructure && terraform validate

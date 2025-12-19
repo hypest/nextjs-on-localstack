@@ -16,8 +16,4 @@ export APP_SRC_DIR
 export TF_VAR_infra_name="$INFRA_NAME"
 export TF_VAR_bucket_base_name="$APP_NAME"
 
-# Wrapper function for terraform init to automatically include backend config
-tf_init() {
-    local TF_BACKEND_CONFIG="-backend-config=bucket=terraform-state-${INFRA_NAME}"
-    terraform init "$@" "$TF_BACKEND_CONFIG"
-}
+export TF_BACKEND_CONFIG="-backend-config=bucket=terraform-state-${INFRA_NAME}"
