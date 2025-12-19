@@ -29,9 +29,9 @@ build_ci_node_image:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
-  before_script:
-    - source config.sh
+  script:
     - apk add --no-cache bash curl jq
+    - source config.sh
     # Wait for Docker daemon to be ready
     - |
       for i in $(seq 1 30); do
@@ -42,7 +42,6 @@ build_ci_node_image:
         echo "Waiting for Docker daemon... ($i/30)"
         sleep 2
       done
-  script:
     - |
       # Force rebuild if Dockerfile or build script changed
       if git diff --name-only $CI_COMMIT_BEFORE_SHA...$CI_COMMIT_SHA 2>/dev/null | grep -E '(Dockerfile.ci-node|scripts/build-ci-node-image.sh)'; then
@@ -77,9 +76,9 @@ build_ci_python_image:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
-  before_script:
-    - source config.sh
+  script:
     - apk add --no-cache bash curl jq
+    - source config.sh
     # Wait for Docker daemon to be ready
     - |
       for i in $(seq 1 30); do
@@ -90,7 +89,6 @@ build_ci_python_image:
         echo "Waiting for Docker daemon... ($i/30)"
         sleep 2
       done
-  script:
     - |
       # Force rebuild if Dockerfile or build script changed
       if git diff --name-only $CI_COMMIT_BEFORE_SHA...$CI_COMMIT_SHA 2>/dev/null | grep -E '(Dockerfile.ci-python|scripts/build-ci-python-image.sh)'; then
@@ -111,8 +109,6 @@ build_ci_python_image:
 validate:
   stage: validate
   image: localhost:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
-  before_script:
-    - source config.sh
   variables:
     # Access LocalStack on host via container name on gitlab-network
     AWS_ENDPOINT_URL: "http://localstack-main:4566"
@@ -120,6 +116,7 @@ validate:
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
   script:
+    - source config.sh
     - cd hello-nextjs
     - npm ci
     - npm run lint
@@ -147,10 +144,9 @@ deploy_infra:
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
-  before_script:
-    - source config.sh
-    - apk add --no-cache aws-cli bash
   script:
+    - apk add --no-cache aws-cli bash
+    - source config.sh
     - |
       set -x
       git config --global --add safe.directory /workspace
@@ -169,8 +165,6 @@ deploy_infra:
 deploy_app:
   stage: deploy_app
   image: localhost:5001/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
-  before_script:
-    - source config.sh
   tags:
     - deploy # Use deploy runner with host Docker access
   variables:
@@ -182,6 +176,7 @@ deploy_app:
   dependencies:
     - deploy_infra
   script:
+    - source config.sh
     - |
       git config --global --add safe.directory /workspace
       DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
@@ -215,10 +210,9 @@ build_backend:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
-  before_script:
-    - source config.sh
-    - apk add --no-cache bash
   script:
+    - apk add --no-cache bash
+    - source config.sh
     - ./scripts/ci-build-backend.sh
   only:
     - main
@@ -239,13 +233,12 @@ deploy_backend:
   dependencies:
     - deploy_infra
     - build_backend
-  before_script:
-    - source config.sh
+  script:
     - apk add --no-cache bash curl wget unzip
     - wget -q -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
     - unzip -q /tmp/terraform.zip -d /usr/local/bin/
     - chmod +x /usr/local/bin/terraform
-  script:
+    - source config.sh
     - ./scripts/ci-deploy-backend.sh
   environment:
     name: $CI_COMMIT_REF_NAME
@@ -268,11 +261,10 @@ deploy_production_manual:
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
     TF_VAR_environment: "prod"
-  before_script:
-    - source config.sh
-    - apk add --no-cache aws-cli
   when: manual
   script:
+    - apk add --no-cache aws-cli
+    - source config.sh
     - set -x
     - cd infrastructure
     - ../scripts/terraform-init
