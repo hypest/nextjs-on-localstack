@@ -1,5 +1,28 @@
 #!/bin/bash
 set -e
 
+# Source configuration to get INFRA_NAME and other variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../config.sh"
+
+# Use AWS_ENDPOINT_URL if set, otherwise default to LocalStack default
+ENDPOINT_URL="${AWS_ENDPOINT_URL:-http://localhost:4566}"
+
+# Helper to run aws commands against LocalStack
+aws_cmd() {
+    aws --endpoint-url="$ENDPOINT_URL" "$@"
+}
+
+# Ensure the Terraform state bucket exists
+echo "Checking Terraform state bucket..."
+BUCKET_NAME="terraform-state-${INFRA_NAME:?Error: INFRA_NAME not set in config.sh}"
+
+if ! aws_cmd s3 ls "s3://$BUCKET_NAME" >/dev/null 2>&1; then
+    echo "Creating Terraform state bucket: $BUCKET_NAME"
+    aws_cmd s3 mb "s3://$BUCKET_NAME"
+else
+    echo "Terraform state bucket $BUCKET_NAME already exists."
+fi
+
 # Run terraform init with backend config
 terraform init "$@" "$TF_BACKEND_CONFIG"

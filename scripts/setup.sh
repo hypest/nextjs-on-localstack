@@ -8,7 +8,22 @@ echo "🚀 Setting up LocalStack + AWS + Terraform development environment..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Source configuration
+source "$WORKSPACE_ROOT/config.sh"
+
 echo "📁 Working in: $WORKSPACE_ROOT"
+
+# Start LocalStack using Docker-in-Docker
+echo "🐳 Starting LocalStack..."
+if [ -f "$WORKSPACE_ROOT/scripts/start-localstack.sh" ]; then
+    bash "$WORKSPACE_ROOT/scripts/start-localstack.sh"
+else
+    echo "⚠️  start-localstack.sh not found, start manually"
+fi
+
+# Start supporting services (Docker Registry)
+echo "🔧 Starting supporting services..."
+bash "$WORKSPACE_ROOT/scripts/start-supporting-services.sh"
 
 # Set up Terraform infrastructure (if infrastructure/ exists)
 if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
@@ -22,18 +37,6 @@ if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
     bash "$SCRIPT_DIR/deploy-infra.sh" "$environment" || echo "Infrastructure deployment failed - check config"
 else
     echo "⚠️  No infrastructure/ directory found, skipping Terraform setup"
-fi
-
-# Start supporting services (Docker Registry)
-echo "🔧 Starting supporting services..."
-bash "$WORKSPACE_ROOT/scripts/start-supporting-services.sh"
-
-# Start LocalStack using Docker-in-Docker
-echo "🐳 Starting LocalStack..."
-if [ -f "$WORKSPACE_ROOT/scripts/start-localstack.sh" ]; then
-    bash "$WORKSPACE_ROOT/scripts/start-localstack.sh"
-else
-    echo "⚠️  start-localstack.sh not found, start manually"
 fi
 
 # Start GitLab using Docker Compose

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# Source configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../config.sh"
+
 # Deploy Terraform infrastructure for a specific environment/workspace
 # Usage: ./scripts/deploy-infra.sh <environment> [bucket_base_name=hello-nextjs]
 # Environment variable: DEPLOY_ENV (used if no argument provided)

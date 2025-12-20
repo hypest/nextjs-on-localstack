@@ -107,9 +107,3 @@ while true; do
     sleep 1
     counter=$((counter+1))
 done
-
-# Initialize LocalStack resources if needed
-if [ -f "$SCRIPT_DIR/init-localstack.sh" ]; then
-    echo "Running LocalStack initialization script..."
-    bash "$SCRIPT_DIR/init-localstack.sh"
-fi
