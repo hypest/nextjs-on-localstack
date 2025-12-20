@@ -3,7 +3,7 @@
 # Sourced by devcontainer and scripts
 
 # Determine project root from this script's location
-PROJECT_ROOT="$(pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 INFRA_NAME="toyaws"
 APP_NAME="helloapp"
