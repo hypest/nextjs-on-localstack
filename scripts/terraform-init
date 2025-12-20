@@ -10,7 +10,7 @@ ENDPOINT_URL="${AWS_ENDPOINT_URL:-http://localhost:4566}"
 
 # Helper to run aws commands against LocalStack
 aws_cmd() {
-    aws --endpoint-url="$ENDPOINT_URL" "$@"
+    aws --endpoint-url="$ENDPOINT_URL" --region "$AWS_DEFAULT_REGION" "$@"
 }
 
 # Ensure the Terraform state bucket exists

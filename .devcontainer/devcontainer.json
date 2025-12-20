@@ -74,7 +74,6 @@
   },
   "postCreateCommand": "bash .devcontainer/scripts/install_zscaler_cert.sh || true && bash .devcontainer/scripts/post-create.sh && bash .devcontainer/scripts/one-time-setup.sh",
   "remoteEnv": {
-    "AWS_DEFAULT_REGION": "us-east-1",
     "AWS_ACCESS_KEY_ID": "test",
     "AWS_SECRET_ACCESS_KEY": "test",
     "LOCALSTACK_ENDPOINT": "http://host.docker.internal:4566"

@@ -8,11 +8,13 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INFRA_NAME="toyaws"
 APP_NAME="helloapp"
 APP_SRC_DIR="$PROJECT_ROOT/hello-nextjs"
+AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 
 export PROJECT_ROOT
 export INFRA_NAME
 export APP_NAME
 export APP_SRC_DIR
+export AWS_DEFAULT_REGION
 export TF_VAR_infra_name="$INFRA_NAME"
 export TF_VAR_bucket_base_name="$APP_NAME"
 
