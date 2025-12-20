@@ -15,5 +15,5 @@ WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
 
 # Switch to infrastructure directory and get bucket name
 cd "$INFRA_DIR"
-terraform workspace select "$WORKSPACE"
+terraform workspace select "$WORKSPACE" >&2
 terraform output -raw s3_bucket_name

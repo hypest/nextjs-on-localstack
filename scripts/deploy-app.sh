@@ -32,6 +32,8 @@ echo "   Target bucket: $BUCKET_NAME"
 
 # Determine API endpoint for this environment
 cd "$INFRA_DIR"
+WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
+terraform workspace select "$WORKSPACE" >&2
 API_GATEWAY_URL=$(terraform output -raw api_gateway_url | sed 's/amazonaws\.com/localhost.localstack.cloud:4566/')
 API_ENDPOINT="${API_GATEWAY_URL}/status"
 echo "   API endpoint: $API_ENDPOINT"
