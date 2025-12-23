@@ -33,7 +33,13 @@ if [ -n "${GITLAB_CI:-}" ]; then
     git config --global --add safe.directory /workspace
 fi
 
+# Initialize Terraform to ensure we can access outputs
+echo "Initializing Terraform..."
+cd "$INFRA_DIR"
+"$PROJECT_ROOT/scripts/terraform-init" -reconfigure > /dev/null
+
 # Get bucket name from Terraform
+cd "$PROJECT_ROOT"
 BUCKET_NAME=$(./scripts/get-bucket-name.sh "$ENVIRONMENT")
 echo "   Target bucket: $BUCKET_NAME"
 
