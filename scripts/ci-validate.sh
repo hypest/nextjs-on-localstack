@@ -12,7 +12,7 @@ npm run build
 
 echo "🔍 Validating Terraform infrastructure..."
 cd "$PROJECT_ROOT/infrastructure"
-"$SCRIPT_DIR/terraform-init" -reconfigure
+"$PROJECT_ROOT/scripts/terraform-init" -reconfigure
 terraform validate
 
 echo "✅ Validation successful!"

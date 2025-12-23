@@ -6,12 +6,11 @@ set -euo pipefail
 # Environment variable: DEPLOY_ENV (used if no argument provided)
 
 if [ -z "${1:-}" ] && [ -z "${DEPLOY_ENV:-}" ]; then
-    export DEPLOY_ENV=$("$SCRIPT_DIR/get-environment-from-branch.sh")
+    export DEPLOY_ENV=$("$PROJECT_ROOT/scripts/get-environment-from-branch.sh")
 fi
 
 ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
 
-PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
 INFRA_DIR="$PROJECT_ROOT/infrastructure"
 DEPLOY_PY="$PROJECT_ROOT/deploy-nextjs.py"  # Updated to take bucket arg
 VENV="$PROJECT_ROOT/venv-deploy"

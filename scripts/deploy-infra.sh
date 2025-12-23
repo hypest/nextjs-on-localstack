@@ -6,7 +6,8 @@ set -euo pipefail
 # Environment variable: DEPLOY_ENV (used if no argument provided)
 
 if [ -z "${1:-}" ] && [ -z "${DEPLOY_ENV:-}" ]; then
-    export DEPLOY_ENV=$("$SCRIPT_DIR/get-environment-from-branch.sh")
+    export DEPLOY_ENV="$PROJECT_ROOT/scripts/get-environment-from-branch.sh"
+    export DEPLOY_ENV=$("$DEPLOY_ENV")
 fi
 
 ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
