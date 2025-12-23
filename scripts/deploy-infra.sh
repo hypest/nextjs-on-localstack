@@ -1,13 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-# Source configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/../config.sh"
-
 # Deploy Terraform infrastructure for a specific environment/workspace
 # Usage: ./scripts/deploy-infra.sh <environment> [bucket_base_name=hello-nextjs]
 # Environment variable: DEPLOY_ENV (used if no argument provided)
+
+if [ -z "${1:-}" ] && [ -z "${DEPLOY_ENV:-}" ]; then
+    export DEPLOY_ENV=$("$SCRIPT_DIR/get-environment-from-branch.sh")
+fi
 
 ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
 BUCKET_BASE_NAME="${2:-${APP_NAME:-hello-nextjs}}"
@@ -34,6 +34,11 @@ fi
 echo "🚀 Deploying infrastructure for environment: $ENVIRONMENT"
 echo "   Bucket base: $BUCKET_BASE_NAME"
 echo "   Infra dir: $INFRA_DIR"
+
+# CI-specific setup
+if [ -n "${GITLAB_CI:-}" ]; then
+    git config --global --add safe.directory /workspace
+fi
 
 # Calculate API port for this environment
 API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")

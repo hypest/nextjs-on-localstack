@@ -31,29 +31,7 @@ build_ci_node_image:
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   script:
     - apk add --no-cache bash curl jq
-    - source config.sh
-    # Wait for Docker daemon to be ready
-    - |
-      for i in $(seq 1 30); do
-        if docker info >/dev/null 2>&1; then
-          echo "Docker daemon is ready"
-          break
-        fi
-        echo "Waiting for Docker daemon... ($i/30)"
-        sleep 2
-      done
-    - |
-      # Force rebuild if Dockerfile or build script changed
-      if git diff --name-only $CI_COMMIT_BEFORE_SHA...$CI_COMMIT_SHA 2>/dev/null | grep -E '(Dockerfile.ci-node|scripts/build-ci-node-image.sh)'; then
-        echo "Dockerfile or build script changed, forcing rebuild"
-        ./scripts/build-ci-node-image.sh
-      # Otherwise check if image exists in registry
-      elif curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-node/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
-        echo "Image already exists, skipping build"
-        exit 0
-      else
-        ./scripts/build-ci-node-image.sh
-      fi
+    - /bin/bash -c "source config.sh && ./scripts/build-ci-node-image.sh"
   rules:
     - changes: [scripts/build-ci-node-image.sh, Dockerfile.ci-node]
       when: always
@@ -78,29 +56,7 @@ build_ci_python_image:
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   script:
     - apk add --no-cache bash curl jq
-    - source config.sh
-    # Wait for Docker daemon to be ready
-    - |
-      for i in $(seq 1 30); do
-        if docker info >/dev/null 2>&1; then
-          echo "Docker daemon is ready"
-          break
-        fi
-        echo "Waiting for Docker daemon... ($i/30)"
-        sleep 2
-      done
-    - |
-      # Force rebuild if Dockerfile or build script changed
-      if git diff --name-only $CI_COMMIT_BEFORE_SHA...$CI_COMMIT_SHA 2>/dev/null | grep -E '(Dockerfile.ci-python|scripts/build-ci-python-image.sh)'; then
-        echo "Dockerfile or build script changed, forcing rebuild"
-        ./scripts/build-ci-python-image.sh
-      # Otherwise check if image exists in registry
-      elif curl -sf --max-time 5 http://local-registry:5000/v2/root/nextjs-on-localstack/ci-python/tags/list | jq -e ".tags[]? | select(. == \"$CI_COMMIT_REF_SLUG\")" > /dev/null 2>&1; then
-        echo "Image already exists, skipping build"
-        exit 0
-      else
-        ./scripts/build-ci-python-image.sh
-      fi
+    - /bin/bash -c "source config.sh && ./scripts/build-ci-python-image.sh"
   rules:
     - changes: [scripts/build-ci-python-image.sh, Dockerfile.ci-python]
       when: always
@@ -116,14 +72,7 @@ validate:
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
   script:
-    - source config.sh
-    - cd hello-nextjs
-    - npm ci
-    - npm run lint
-    - npm run build
-    - cd ../infrastructure
-    - ../scripts/terraform-init -reconfigure
-    - terraform validate
+    - /bin/bash -c "source config.sh && ./scripts/ci-validate.sh"
   only:
     - merge_requests
     - main
@@ -146,13 +95,7 @@ deploy_infra:
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
   script:
     - apk add --no-cache aws-cli bash
-    - source config.sh
-    - |
-      set -x
-      git config --global --add safe.directory /workspace
-      DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
-      export DEPLOY_ENV
-      ./scripts/deploy-infra.sh
+    - /bin/bash -c "source config.sh && ./scripts/deploy-infra.sh"
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
@@ -176,13 +119,7 @@ deploy_app:
   dependencies:
     - deploy_infra
   script:
-    - source config.sh
-    - |
-      git config --global --add safe.directory /workspace
-      DEPLOY_ENV=$(./scripts/get-environment-from-branch.sh)
-      export DEPLOY_ENV
-      cd infrastructure && ../scripts/terraform-init && cd ..
-      ./scripts/deploy-app.sh
+    - /bin/bash -c "source config.sh && ./scripts/deploy-app.sh"
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
@@ -212,8 +149,7 @@ build_backend:
     DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
   script:
     - apk add --no-cache bash
-    - source config.sh
-    - ./scripts/ci-build-backend.sh
+    - /bin/bash -c "source config.sh && ./scripts/ci-build-backend.sh"
   only:
     - main
     - develop
@@ -235,11 +171,7 @@ deploy_backend:
     - build_backend
   script:
     - apk add --no-cache bash curl wget unzip
-    - wget -q -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
-    - unzip -q /tmp/terraform.zip -d /usr/local/bin/
-    - chmod +x /usr/local/bin/terraform
-    - source config.sh
-    - ./scripts/ci-deploy-backend.sh
+    - /bin/bash -c "source config.sh && ./scripts/ci-deploy-backend.sh"
   environment:
     name: $CI_COMMIT_REF_NAME
   only:
@@ -264,14 +196,7 @@ deploy_production_manual:
   when: manual
   script:
     - apk add --no-cache aws-cli
-    - source config.sh
-    - set -x
-    - cd infrastructure
-    - ../scripts/terraform-init
-    - SANITIZED_ENV="prod"
-    - terraform workspace select "$SANITIZED_ENV" || terraform workspace new "$SANITIZED_ENV"
-    - terraform refresh
-    - terraform apply -auto-approve
+    - /bin/bash -c "source config.sh && ./scripts/deploy-infra.sh prod"
   environment:
     name: production
   only:

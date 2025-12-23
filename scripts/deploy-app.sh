@@ -5,9 +5,12 @@ set -euo pipefail
 # Usage: ./scripts/deploy-app.sh <environment>
 # Environment variable: DEPLOY_ENV (used if no argument provided)
 
+if [ -z "${1:-}" ] && [ -z "${DEPLOY_ENV:-}" ]; then
+    export DEPLOY_ENV=$("$SCRIPT_DIR/get-environment-from-branch.sh")
+fi
+
 ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
 INFRA_DIR="$PROJECT_ROOT/infrastructure"
 DEPLOY_PY="$PROJECT_ROOT/deploy-nextjs.py"  # Updated to take bucket arg
@@ -25,6 +28,11 @@ if [[ "$ENVIRONMENT" == "prod" || "$ENVIRONMENT" == "staging" ]]; then
 fi
 
 echo "🚀 Deploying app for environment: $ENVIRONMENT"
+
+# CI-specific setup
+if [ -n "${GITLAB_CI:-}" ]; then
+    git config --global --add safe.directory /workspace
+fi
 
 # Get bucket name from Terraform
 BUCKET_NAME=$(./scripts/get-bucket-name.sh "$ENVIRONMENT")

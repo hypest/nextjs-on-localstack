@@ -7,6 +7,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Install Terraform if missing (for CI environments)
+if ! command -v terraform &> /dev/null; then
+    echo "🛠️  Installing Terraform..."
+    wget -q -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
+    unzip -q /tmp/terraform.zip -d /usr/local/bin/
+    chmod +x /usr/local/bin/terraform
+fi
+
 # Get environment and image tag
 export DEPLOY_ENV="${DEPLOY_ENV:-$(./scripts/get-environment-from-branch.sh)}"
 IMAGE_TAG="${CI_COMMIT_SHORT_SHA:-latest}"
