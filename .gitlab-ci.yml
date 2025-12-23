@@ -170,7 +170,7 @@ deploy_backend:
     - deploy_infra
     - build_backend
   script:
-    - apk add --no-cache bash curl wget unzip
+    - apk add --no-cache bash curl wget unzip aws-cli
     - /bin/bash -c "source config.sh && ./scripts/ci-deploy-backend.sh"
   environment:
     name: $CI_COMMIT_REF_NAME
