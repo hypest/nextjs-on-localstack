@@ -72,7 +72,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "bash .devcontainer/scripts/install_zscaler_cert.sh || true && bash .devcontainer/scripts/post-create.sh && bash .devcontainer/scripts/one-time-setup.sh",
+  "postCreateCommand": "bash -c 'source config.sh && (bash .devcontainer/scripts/install_zscaler_cert.sh || true) && bash .devcontainer/scripts/post-create.sh && bash .devcontainer/scripts/one-time-setup.sh'",
   "remoteEnv": {
     "AWS_ACCESS_KEY_ID": "test",
     "AWS_SECRET_ACCESS_KEY": "test",
