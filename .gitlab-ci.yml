@@ -10,6 +10,8 @@ variables:
   DOCKER_HOST: unix:///var/run/docker.sock
   # LocalStack is already running on the host at localhost:4566
   # CI jobs access these via host network or gateway
+  # Pass Codespaces flag if available (for basePath detection)
+  CODESPACES: "${CODESPACES}"
 
 # Build custom CI images with pre-installed tools
 build_ci_node_image:

@@ -55,9 +55,10 @@ echo "   API endpoint: $API_ENDPOINT"
 echo "📦 Building Next.js..."
 cd "$APP_SRC_DIR"
 npm ci --only=production  # Fast install
-# Set basePath only in Codespaces (where virtual-host URLs don't work through proxy)
-if [ -n "${CODESPACES:-}" ]; then
-  echo "   Codespaces detected: building with basePath=/$BUCKET_NAME"
+# Set basePath in Codespaces or when USE_BASEPATH is explicitly set
+# Codespaces need basePath because external access uses path-style URLs through the proxy
+if [ -n "${CODESPACES:-}" ] || [ "${USE_BASEPATH:-}" = "true" ]; then
+  echo "   Codespaces/basePath mode: building with basePath=/$BUCKET_NAME"
   NEXT_PUBLIC_BASE_PATH="/$BUCKET_NAME" NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
 else
   echo "   Local environment: building without basePath (using virtual-host URLs)"
