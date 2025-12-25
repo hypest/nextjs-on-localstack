@@ -47,8 +47,26 @@ echo "   Target bucket: $BUCKET_NAME"
 cd "$INFRA_DIR"
 WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
 terraform workspace select "$WORKSPACE" >&2
-API_GATEWAY_URL=$(terraform output -raw api_gateway_url | sed 's/amazonaws\.com/localhost.localstack.cloud:4566/')
-API_ENDPOINT="${API_GATEWAY_URL}/status"
+
+# In Codespaces, use the forwarded backend port (HTTPS) instead of LocalStack API Gateway (HTTP)
+# This avoids mixed content errors when the frontend is served over HTTPS
+if [ -n "${CODESPACES:-}" ]; then
+  API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")
+  # Use GitHub Codespaces port forwarding URL format
+  # User needs to replace this with their actual codespace name, or we can try to detect it
+  if [ -n "${CODESPACE_NAME:-}" ]; then
+    API_ENDPOINT="https://${CODESPACE_NAME}-${API_PORT}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/api/status"
+  else
+    # Fallback: use the container name (works internally but not externally)
+    CONTAINER_NAME="backend-api-${WORKSPACE}"
+    API_ENDPOINT="http://${CONTAINER_NAME}:3001/api/status"
+    echo "   ⚠️  Warning: CODESPACE_NAME not set. API endpoint may not work externally."
+  fi
+else
+  # Local environment: use API Gateway via LocalStack
+  API_GATEWAY_URL=$(terraform output -raw api_gateway_url | sed 's/amazonaws\.com/localhost.localstack.cloud:4566/')
+  API_ENDPOINT="${API_GATEWAY_URL}/status"
+fi
 echo "   API endpoint: $API_ENDPOINT"
 
 # Build Next.js static export
