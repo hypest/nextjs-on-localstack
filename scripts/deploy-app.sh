@@ -55,7 +55,14 @@ echo "   API endpoint: $API_ENDPOINT"
 echo "📦 Building Next.js..."
 cd "$APP_SRC_DIR"
 npm ci --only=production  # Fast install
-NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
+# Set basePath only in Codespaces (where virtual-host URLs don't work through proxy)
+if [ -n "${CODESPACES:-}" ]; then
+  echo "   Codespaces detected: building with basePath=/$BUCKET_NAME"
+  NEXT_PUBLIC_BASE_PATH="/$BUCKET_NAME" NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
+else
+  echo "   Local environment: building without basePath (using virtual-host URLs)"
+  NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
+fi
 echo "   Build complete: out/ ready"
 
 # Deploy via Python (boto3)
