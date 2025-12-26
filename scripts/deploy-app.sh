@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Deploy Next.js static app to S3 for specific env/workspace
 # Usage: ./scripts/deploy-app.sh <environment>
 # Environment variable: DEPLOY_ENV (used if no argument provided)
