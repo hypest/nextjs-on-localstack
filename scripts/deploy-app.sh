@@ -77,9 +77,11 @@ cd "$APP_SRC_DIR"
 npm ci --only=production  # Fast install
 # Set basePath in Codespaces or when USE_BASEPATH is explicitly set
 # Codespaces need basePath because external access uses path-style URLs through the proxy
+BASE_PATH=""
 if [ -n "${CODESPACES:-}" ] || [ "${USE_BASEPATH:-}" = "true" ]; then
   echo "   Codespaces/basePath mode: building with basePath=/$BUCKET_NAME"
-  NEXT_PUBLIC_BASE_PATH="/$BUCKET_NAME" NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
+  BASE_PATH="/$BUCKET_NAME"
+  NEXT_PUBLIC_BASE_PATH="$BASE_PATH" NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
 else
   echo "   Local environment: building without basePath (using virtual-host URLs)"
   NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
@@ -97,4 +99,9 @@ pip install --upgrade pip boto3 botocore
 python3 "$DEPLOY_PY" "$BUCKET_NAME"
 
 echo "✅ App deployed to $BUCKET_NAME"
-echo "🌐 Website: http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566/"
+if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ]; then
+  WEBSITE_URL="https://${CODESPACE_NAME}-4566.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}${BASE_PATH}/"
+else
+  WEBSITE_URL="http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566${BASE_PATH}/"
+fi
+echo "🌐 Website: $WEBSITE_URL"
