@@ -99,7 +99,7 @@ pip install --upgrade pip boto3 botocore
 python3 "$DEPLOY_PY" "$BUCKET_NAME"
 
 echo "✅ App deployed to $BUCKET_NAME"
-if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ]; then
+if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ] && [ -z "${GITLAB_CI:-}" ]; then
   WEBSITE_URL="https://${CODESPACE_NAME}-4566.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}${BASE_PATH}/"
 else
   WEBSITE_URL="http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566${BASE_PATH}/"
