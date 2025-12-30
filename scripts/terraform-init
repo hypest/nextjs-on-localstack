@@ -25,4 +25,4 @@ else
 fi
 
 # Run terraform init with backend config
-terraform init "$@" "$TF_BACKEND_CONFIG"
+terraform init "$@" "$TF_BACKEND_CONFIG" -backend-config="endpoints.s3=$ENDPOINT_URL"
