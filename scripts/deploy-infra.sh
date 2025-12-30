@@ -45,6 +45,10 @@ fi
 API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")
 echo "   API port: $API_PORT"
 
+# Calculate proxy port for this environment
+PROXY_PORT=$("$SCRIPT_DIR/calculate-proxy-port.sh" "$ENVIRONMENT")
+echo "   Proxy port: $PROXY_PORT"
+
 cd "$INFRA_DIR"
 
 # Initialize Terraform to ensure modules and providers are up-to-date
@@ -67,13 +71,13 @@ fi
 
 # Refresh state to sync with existing infrastructure
 echo "Refreshing Terraform state..."
-TF_VAR_api_port="$API_PORT" terraform refresh \
+TF_VAR_api_port="$API_PORT" TF_VAR_proxy_port="$PROXY_PORT" terraform refresh \
     -var="environment=$SANITIZED_ENV" \
     -var="bucket_base_name=$BUCKET_BASE_NAME"
 
 # Apply
 echo "Applying Terraform..."
-TF_VAR_api_port="$API_PORT" terraform apply -auto-approve \
+TF_VAR_api_port="$API_PORT" TF_VAR_proxy_port="$PROXY_PORT" terraform apply -auto-approve \
     -var="environment=$SANITIZED_ENV" \
     -var="bucket_base_name=$BUCKET_BASE_NAME"
 

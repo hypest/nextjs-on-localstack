@@ -46,3 +46,18 @@ output "api_gateway_url" {
   description = "API Gateway URL for the backend API"
   value       = replace(replace(aws_api_gateway_stage.backend_api_stage.invoke_url, "https://", "http://"), "amazonaws.com", "localhost.localstack.cloud:4566")
 }
+
+output "s3_proxy_endpoint" {
+  description = "S3 website proxy endpoint (for Codespaces)"
+  value       = module.s3_website_proxy.proxy_endpoint
+}
+
+output "s3_proxy_port" {
+  description = "S3 website proxy port"
+  value       = module.s3_website_proxy.proxy_port
+}
+
+output "s3_proxy_instance_id" {
+  description = "EC2 instance ID for S3 website proxy"
+  value       = module.s3_website_proxy.instance_id
+}

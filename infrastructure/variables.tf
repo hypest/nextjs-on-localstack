@@ -38,3 +38,9 @@ variable "api_internal_port" {
   type        = number
   default     = 3001
 }
+
+variable "proxy_port" {
+  description = "Port for S3 website proxy (for Codespaces compatibility)"
+  type        = number
+  default     = 8888
+}

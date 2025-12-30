@@ -69,6 +69,14 @@ module "backend_ec2" {
   api_port    = var.api_port
 }
 
+module "s3_website_proxy" {
+  source = "./modules/s3-website-proxy"
+
+  environment = var.environment
+  infra_name  = var.infra_name
+  proxy_port  = var.proxy_port
+}
+
 # API Gateway for backend API routing
 resource "aws_api_gateway_rest_api" "backend_api" {
   name        = "backend-api-${var.environment}"

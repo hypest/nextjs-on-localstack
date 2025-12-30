@@ -100,7 +100,13 @@ python3 "$DEPLOY_PY" "$BUCKET_NAME"
 
 echo "✅ App deployed to $BUCKET_NAME"
 if [ "${CODESPACES:-}" = "true" ] && [ -n "${CODESPACE_NAME:-}" ]; then
-  WEBSITE_URL="https://${CODESPACE_NAME}-4566.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}${BASE_PATH}/"
+  # In Codespaces, use the S3 website proxy (deployed as EC2 instance)
+  # The proxy translates path-style URLs to virtual-host URLs for LocalStack
+  cd "$INFRA_DIR"
+  PROXY_PORT=$(terraform output -raw s3_proxy_port)
+  cd "$PROJECT_ROOT"
+  
+  WEBSITE_URL="https://${CODESPACE_NAME}-${PROXY_PORT}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/${BUCKET_NAME}/"
 else
   WEBSITE_URL="http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566${BASE_PATH}/"
 fi
