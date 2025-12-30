@@ -42,11 +42,11 @@ if [ -n "${GITLAB_CI:-}" ]; then
 fi
 
 # Calculate API port for this environment
-API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")
+API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT" "api")
 echo "   API port: $API_PORT"
 
 # Calculate proxy port for this environment
-PROXY_PORT=$("$SCRIPT_DIR/calculate-proxy-port.sh" "$ENVIRONMENT")
+PROXY_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT" "proxy")
 echo "   Proxy port: $PROXY_PORT"
 
 cd "$INFRA_DIR"
