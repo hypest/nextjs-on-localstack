@@ -161,7 +161,7 @@ build_backend:
     - /^base\/cicd-.*/
 
 build_proxy:
-  stage: build_backend
+  stage: build_ci_images
   image: docker:latest
   services:
     - name: docker:dind
