@@ -43,6 +43,9 @@ services:
       - gitlab-network
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - CODESPACES
+      - CODESPACE_NAME
+      - GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN
     volumes:
       - 'gitlab_runner_config:/etc/gitlab-runner'
       - '/var/run/docker.sock:/var/run/docker.sock'

@@ -174,6 +174,9 @@ docker exec gitlab-runner gitlab-runner register \
   --docker-volumes "/cache" \
   --docker-extra-hosts "host.docker.internal:host-gateway" \
   --docker-network-mode "gitlab-network" \
+  --env "CODESPACES=${CODESPACES:-}" \
+  --env "CODESPACE_NAME=${CODESPACE_NAME:-}" \
+  --env "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" \
   --run-untagged="true" \
   --locked="false" \
   --access-level="not_protected" \
@@ -192,6 +195,9 @@ docker exec gitlab-runner gitlab-runner register \
   --docker-extra-hosts "host.docker.internal:host-gateway" \
   --docker-network-mode "devcontainer-network" \
   --tag-list "deploy,host-docker" \
+  --env "CODESPACES=${CODESPACES:-}" \
+  --env "CODESPACE_NAME=${CODESPACE_NAME:-}" \
+  --env "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" \
   --run-untagged="false" \
   --locked="false" \
   --access-level="not_protected" \
