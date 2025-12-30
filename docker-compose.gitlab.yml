@@ -4,6 +4,8 @@ networks:
   gitlab-network:
     name: gitlab-network
     driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
   devcontainer-network:
     name: devcontainer-network
     external: true

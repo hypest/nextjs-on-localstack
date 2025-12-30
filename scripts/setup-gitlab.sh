@@ -174,6 +174,8 @@ docker exec gitlab-runner gitlab-runner register \
   --docker-volumes "/cache" \
   --docker-extra-hosts "host.docker.internal:host-gateway" \
   --docker-network-mode "gitlab-network" \
+  --docker-dns "8.8.8.8" \
+  --docker-dns "8.8.4.4" \
   --env "CODESPACES=${CODESPACES:-}" \
   --env "CODESPACE_NAME=${CODESPACE_NAME:-}" \
   --env "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" \
