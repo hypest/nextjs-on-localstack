@@ -23,17 +23,23 @@ http {
         listen ${PROXY_PORT};
         server_name _;
 
-        # Proxy to LocalStack S3 website endpoint
-        # Supports path-style URLs: /{bucket-name}/{path}
-        location ~ ^/([^/]+)(/.*)?$ {
-            set $bucket_name $1;
-            set $object_path $2;
+        # Proxy to Backend API
+        location /api/ {
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
 
-            # Rewrite to remove bucket name from path
-            rewrite ^/[^/]+(.*)$ $1 break;
+            # Proxy to the backend container (on the same network)
+            proxy_pass http://${BACKEND_CONTAINER_NAME}:3001;
+            
+            proxy_redirect off;
+        }
 
+        # Proxy to LocalStack S3 website endpoint (Frontend)
+        location / {
             # Set the Host header for LocalStack's virtual-host routing
-            proxy_set_header Host $bucket_name.s3-website.us-east-1.localhost.localstack.cloud;
+            proxy_set_header Host ${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
@@ -46,12 +52,6 @@ http {
 
             # Error handling
             proxy_intercept_errors on;
-        }
-
-        # Root path - return info message
-        location = / {
-            default_type text/html;
-            return 200 '<html><body><h1>S3 Website Proxy</h1><p>Usage: /{bucket-name}/path</p><p>Example: /my-bucket/index.html</p></body></html>\n';
         }
 
         # Health check endpoint

@@ -14,3 +14,13 @@ variable "proxy_port" {
   type        = number
   default     = 8888
 }
+
+variable "bucket_name" {
+  description = "S3 bucket name to proxy to"
+  type        = string
+}
+
+variable "backend_container_name" {
+  description = "Name of the backend API container"
+  type        = string
+}

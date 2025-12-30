@@ -72,9 +72,11 @@ module "backend_ec2" {
 module "s3_website_proxy" {
   source = "./modules/s3-website-proxy"
 
-  environment = var.environment
-  infra_name  = var.infra_name
-  proxy_port  = var.proxy_port
+  environment            = var.environment
+  infra_name             = var.infra_name
+  proxy_port             = var.proxy_port
+  bucket_name            = module.nextjs_s3.bucket_name
+  backend_container_name = "backend-api-${var.environment}"
 }
 
 # API Gateway for backend API routing

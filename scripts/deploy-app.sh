@@ -46,46 +46,18 @@ BUCKET_NAME=$(./scripts/get-bucket-name.sh "$ENVIRONMENT")
 echo "   Target bucket: $BUCKET_NAME"
 
 # Determine API endpoint for this environment
-cd "$INFRA_DIR"
-WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
-terraform workspace select "$WORKSPACE" >&2
-
-# In Codespaces, use the forwarded backend port (HTTPS) instead of LocalStack API Gateway (HTTP)
-# This avoids mixed content errors when the frontend is served over HTTPS
-if [ "${CODESPACES:-}" = "true" ]; then
-  API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")
-  # Use GitHub Codespaces port forwarding URL format
-  # User needs to replace this with their actual codespace name, or we can try to detect it
-  if [ -n "${CODESPACE_NAME:-}" ]; then
-    API_ENDPOINT="https://${CODESPACE_NAME}-${API_PORT}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/api/status"
-  else
-    # Fallback: use the container name (works internally but not externally)
-    CONTAINER_NAME="backend-api-${WORKSPACE}"
-    API_ENDPOINT="http://${CONTAINER_NAME}:3001/api/status"
-    echo "   ⚠️  Warning: CODESPACE_NAME not set. API endpoint may not work externally."
-  fi
-else
-  # Local environment: use API Gateway via LocalStack
-  API_GATEWAY_URL=$(terraform output -raw api_gateway_url | sed 's/amazonaws\.com/localhost.localstack.cloud:4566/')
-  API_ENDPOINT="${API_GATEWAY_URL}/status"
-fi
+# With the unified proxy, the API is always at /api relative to the frontend
+API_ENDPOINT="/api/status"
 echo "   API endpoint: $API_ENDPOINT"
 
 # Build Next.js static export
 echo "📦 Building Next.js..."
 cd "$APP_SRC_DIR"
 npm ci --only=production  # Fast install
-# Set basePath in Codespaces or when USE_BASEPATH is explicitly set
-# Codespaces need basePath because external access uses path-style URLs through the proxy
-BASE_PATH=""
-if [ "${CODESPACES:-}" = "true" ] || [ "${USE_BASEPATH:-}" = "true" ]; then
-  echo "   Codespaces/basePath mode: building with basePath=/$BUCKET_NAME"
-  BASE_PATH="/$BUCKET_NAME"
-  NEXT_PUBLIC_BASE_PATH="$BASE_PATH" NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
-else
-  echo "   Local environment: building without basePath (using virtual-host URLs)"
-  NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
-fi
+
+# Unified build: No basePath needed as the proxy handles bucket mapping
+echo "   Building with unified proxy routing (API at $API_ENDPOINT)"
+NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
 echo "   Build complete: out/ ready"
 
 # Deploy via Python (boto3)

@@ -10,9 +10,11 @@ locals {
 # Run the proxy container (image should be pre-built by CI)
 resource "null_resource" "deploy_proxy_container" {
   triggers = {
-    container_name = local.container_name
-    proxy_port     = var.proxy_port
-    image_name     = local.image_name
+    container_name         = local.container_name
+    proxy_port             = var.proxy_port
+    image_name             = local.image_name
+    bucket_name            = var.bucket_name
+    backend_container_name = var.backend_container_name
   }
 
   provisioner "local-exec" {
@@ -27,6 +29,9 @@ resource "null_resource" "deploy_proxy_container" {
         --restart unless-stopped \
         --network devcontainer-network \
         -p ${var.proxy_port}:${var.proxy_port} \
+        -e PROXY_PORT=${var.proxy_port} \
+        -e BUCKET_NAME=${var.bucket_name} \
+        -e BACKEND_CONTAINER_NAME=${var.backend_container_name} \
         ${local.image_name}
     EOF
   }

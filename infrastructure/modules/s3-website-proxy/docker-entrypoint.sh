@@ -9,8 +9,8 @@ PROXY_PORT="${PROXY_PORT:-8888}"
 
 echo "Starting S3 website proxy on port $PROXY_PORT"
 
-# Substitute port in nginx config
-envsubst '${PROXY_PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+# Substitute variables in nginx config
+envsubst '${PROXY_PORT} ${BUCKET_NAME} ${BACKEND_CONTAINER_NAME}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 # Start nginx
 exec nginx -g 'daemon off;'
