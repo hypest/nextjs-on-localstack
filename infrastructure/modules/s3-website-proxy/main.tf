@@ -54,9 +54,4 @@ resource "null_resource" "deploy_proxy_container" {
         ${local.image_name}
     EOF
   }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = "docker stop ${local.container_name} 2>/dev/null || true && docker rm ${local.container_name} 2>/dev/null || true"
-  }
 }
