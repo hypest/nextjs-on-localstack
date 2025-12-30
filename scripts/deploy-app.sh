@@ -71,15 +71,15 @@ pip install --upgrade pip boto3 botocore
 python3 "$DEPLOY_PY" "$BUCKET_NAME"
 
 echo "✅ App deployed to $BUCKET_NAME"
+
+# Determine the access URL via the unified proxy
+cd "$INFRA_DIR"
+PROXY_PORT=$(terraform output -raw s3_proxy_port)
+cd "$PROJECT_ROOT"
+
 if [ "${CODESPACES:-}" = "true" ] && [ -n "${CODESPACE_NAME:-}" ]; then
-  # In Codespaces, use the S3 website proxy (deployed as Docker container)
-  # The proxy translates path-style URLs to virtual-host URLs for LocalStack
-  cd "$INFRA_DIR"
-  PROXY_PORT=$(terraform output -raw s3_proxy_port)
-  cd "$PROJECT_ROOT"
-  
-  WEBSITE_URL="https://${CODESPACE_NAME}-${PROXY_PORT}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/${BUCKET_NAME}/"
+  WEBSITE_URL="https://${CODESPACE_NAME}-${PROXY_PORT}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/"
 else
-  WEBSITE_URL="http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566${BASE_PATH}/"
+  WEBSITE_URL="http://localhost:${PROXY_PORT}/"
 fi
 echo "🌐 Website: $WEBSITE_URL"
