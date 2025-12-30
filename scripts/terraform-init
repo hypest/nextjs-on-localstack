@@ -6,11 +6,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../config.sh"
 
 # Use AWS_ENDPOINT_URL if set, otherwise default to LocalStack default
-ENDPOINT_URL="${AWS_ENDPOINT_URL:-http://localhost:4566}"
+export AWS_ENDPOINT_URL="${AWS_ENDPOINT_URL:-http://localhost:4566}"
 
 # Helper to run aws commands against LocalStack
 aws_cmd() {
-    aws --endpoint-url="$ENDPOINT_URL" --region "$AWS_DEFAULT_REGION" "$@"
+    aws --endpoint-url="$AWS_ENDPOINT_URL" --region "$AWS_DEFAULT_REGION" "$@"
 }
 
 # Ensure the Terraform state bucket exists
@@ -25,4 +25,5 @@ else
 fi
 
 # Run terraform init with backend config
-terraform init "$@" "$TF_BACKEND_CONFIG" -backend-config="endpoints.s3=$ENDPOINT_URL"
+# Terraform 1.6+ will automatically use AWS_ENDPOINT_URL for the S3 backend
+terraform init "$@" "$TF_BACKEND_CONFIG"
