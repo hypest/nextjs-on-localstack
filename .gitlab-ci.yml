@@ -25,6 +25,7 @@ build_ci_node_image:
           "--host=tcp://0.0.0.0:2375",
           "--tls=false",
           "--insecure-registry=local-registry:5000",
+          "--mtu=1400",
         ]
   variables:
     DOCKER_HOST: tcp://docker:2375
@@ -50,6 +51,7 @@ build_ci_python_image:
           "--host=tcp://0.0.0.0:2375",
           "--tls=false",
           "--insecure-registry=local-registry:5000",
+          "--mtu=1400",
         ]
   variables:
     DOCKER_HOST: tcp://docker:2375
@@ -146,6 +148,7 @@ build_backend:
           "--host=tcp://0.0.0.0:2375",
           "--tls=false",
           "--insecure-registry=local-registry:5000",
+          "--mtu=1400",
         ]
   variables:
     DOCKER_HOST: tcp://docker:2375
@@ -172,6 +175,7 @@ build_proxy:
           "--host=tcp://0.0.0.0:2375",
           "--tls=false",
           "--insecure-registry=local-registry:5000",
+          "--mtu=1400",
         ]
   variables:
     DOCKER_HOST: tcp://docker:2375
