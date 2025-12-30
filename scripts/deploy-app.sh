@@ -52,7 +52,7 @@ terraform workspace select "$WORKSPACE" >&2
 
 # In Codespaces, use the forwarded backend port (HTTPS) instead of LocalStack API Gateway (HTTP)
 # This avoids mixed content errors when the frontend is served over HTTPS
-if [ -n "${CODESPACES:-}" ]; then
+if [ "${CODESPACES:-}" = "true" ]; then
   API_PORT=$("$SCRIPT_DIR/calculate-port.sh" "$ENVIRONMENT")
   # Use GitHub Codespaces port forwarding URL format
   # User needs to replace this with their actual codespace name, or we can try to detect it
@@ -78,7 +78,7 @@ npm ci --only=production  # Fast install
 # Set basePath in Codespaces or when USE_BASEPATH is explicitly set
 # Codespaces need basePath because external access uses path-style URLs through the proxy
 BASE_PATH=""
-if [ -n "${CODESPACES:-}" ] || [ "${USE_BASEPATH:-}" = "true" ]; then
+if [ "${CODESPACES:-}" = "true" ] || [ "${USE_BASEPATH:-}" = "true" ]; then
   echo "   Codespaces/basePath mode: building with basePath=/$BUCKET_NAME"
   BASE_PATH="/$BUCKET_NAME"
   NEXT_PUBLIC_BASE_PATH="$BASE_PATH" NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
@@ -99,7 +99,7 @@ pip install --upgrade pip boto3 botocore
 python3 "$DEPLOY_PY" "$BUCKET_NAME"
 
 echo "✅ App deployed to $BUCKET_NAME"
-if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ] && [ -z "${GITLAB_CI:-}" ]; then
+if [ "${CODESPACES:-}" = "true" ] && [ -n "${CODESPACE_NAME:-}" ]; then
   WEBSITE_URL="https://${CODESPACE_NAME}-4566.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}${BASE_PATH}/"
 else
   WEBSITE_URL="http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566${BASE_PATH}/"
