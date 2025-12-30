@@ -52,8 +52,9 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
             
-            # Proxy to LocalStack (using Docker internal networking)
-            proxy_pass http://localstack-main:4566;
+            # Proxy to LocalStack (from within EC2 instance)
+            # Use LocalStack's internal hostname
+            proxy_pass http://localstack:4566;
             
             # Handle redirects
             proxy_redirect off;
