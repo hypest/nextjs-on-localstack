@@ -100,7 +100,7 @@ python3 "$DEPLOY_PY" "$BUCKET_NAME"
 
 echo "✅ App deployed to $BUCKET_NAME"
 if [ "${CODESPACES:-}" = "true" ] && [ -n "${CODESPACE_NAME:-}" ]; then
-  # In Codespaces, use the S3 website proxy (deployed as EC2 instance)
+  # In Codespaces, use the S3 website proxy (deployed as Docker container)
   # The proxy translates path-style URLs to virtual-host URLs for LocalStack
   cd "$INFRA_DIR"
   PROXY_PORT=$(terraform output -raw s3_proxy_port)

@@ -57,7 +57,7 @@ output "s3_proxy_port" {
   value       = module.s3_website_proxy.proxy_port
 }
 
-output "s3_proxy_instance_id" {
-  description = "EC2 instance ID for S3 website proxy"
-  value       = module.s3_website_proxy.instance_id
+output "s3_proxy_container" {
+  description = "S3 website proxy container name"
+  value       = module.s3_website_proxy.container_name
 }

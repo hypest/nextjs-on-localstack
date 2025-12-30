@@ -1,51 +1,62 @@
-resource "aws_security_group" "proxy_sg" {
-  name        = "${var.infra_name}-sg-${var.environment}"
-  description = "Security group for S3 website proxy"
+# Deploy S3 website proxy as Docker container (simulating EC2 deployment)
+# This follows the same pattern as the backend API deployment
 
-  ingress {
-    description = "Proxy HTTP port"
-    from_port   = var.proxy_port
-    to_port     = var.proxy_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+locals {
+  container_name = "s3-website-proxy-${var.environment}"
+  registry_endpoint = "localhost:5001"
+  image_name = "${local.registry_endpoint}/s3-website-proxy:latest"
+}
+
+# Build and push the nginx proxy image
+resource "null_resource" "build_proxy_image" {
+  triggers = {
+    # Rebuild when nginx config changes
+    nginx_config = filemd5("${path.module}/nginx.conf.template")
+    dockerfile   = filemd5("${path.module}/Dockerfile")
   }
 
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "Allow all outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "${var.infra_name}-sg-${var.environment}"
-    Environment = var.environment
-    Project     = var.infra_name
+  provisioner "local-exec" {
+    command = <<-EOF
+      # Build the nginx proxy image
+      docker build -t s3-website-proxy:latest ${path.module}
+      
+      # Tag for local registry
+      docker tag s3-website-proxy:latest ${local.image_name}
+      
+      # Push to local registry
+      docker push ${local.image_name}
+    EOF
   }
 }
 
-resource "aws_instance" "proxy_server" {
-  ami           = var.ami_id
-  instance_type = var.instance_type
+# Run the proxy container
+resource "null_resource" "deploy_proxy_container" {
+  depends_on = [null_resource.build_proxy_image]
 
-  vpc_security_group_ids = [aws_security_group.proxy_sg.id]
+  triggers = {
+    container_name = local.container_name
+    proxy_port     = var.proxy_port
+    image_name     = local.image_name
+  }
 
-  user_data = templatefile("${path.module}/user-data.sh", {
-    proxy_port = var.proxy_port
-  })
+  provisioner "local-exec" {
+    command = <<-EOF
+      # Stop and remove existing container
+      docker stop ${local.container_name} 2>/dev/null || true
+      docker rm ${local.container_name} 2>/dev/null || true
+      
+      # Run the proxy container
+      docker run -d \
+        --name ${local.container_name} \
+        --restart unless-stopped \
+        --network devcontainer-network \
+        -p ${var.proxy_port}:${var.proxy_port} \
+        ${local.image_name}
+    EOF
+  }
 
-  tags = {
-    Name        = "${var.infra_name}-${var.environment}"
-    Environment = var.environment
-    Project     = var.infra_name
+  provisioner "local-exec" {
+    when    = destroy
+    command = "docker stop ${local.container_name} 2>/dev/null || true && docker rm ${local.container_name} 2>/dev/null || true"
   }
 }
