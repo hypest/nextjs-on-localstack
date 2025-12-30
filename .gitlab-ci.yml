@@ -10,10 +10,8 @@ variables:
   DOCKER_HOST: unix:///var/run/docker.sock
   # LocalStack is already running on the host at localhost:4566
   # CI jobs access these via host network or gateway
-  # Pass Codespaces environment variables if available (for basePath and API endpoint detection)
-  CODESPACES: "${CODESPACES}"
-  CODESPACE_NAME: "${CODESPACE_NAME}"
-  GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN: "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+  # Codespaces environment variables are passed via runner's --env configuration
+  # (set during runner registration in setup-gitlab.sh)
 
 # Build custom CI images with pre-installed tools
 build_ci_node_image:
