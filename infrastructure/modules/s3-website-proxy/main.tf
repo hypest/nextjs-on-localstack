@@ -7,32 +7,8 @@ locals {
   image_name = "${local.registry_endpoint}/s3-website-proxy:latest"
 }
 
-# Build and push the nginx proxy image
-resource "null_resource" "build_proxy_image" {
-  triggers = {
-    # Rebuild when nginx config changes
-    nginx_config = filemd5("${path.module}/nginx.conf.template")
-    dockerfile   = filemd5("${path.module}/Dockerfile")
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOF
-      # Build the nginx proxy image
-      docker build -t s3-website-proxy:latest ${path.module}
-      
-      # Tag for local registry
-      docker tag s3-website-proxy:latest ${local.image_name}
-      
-      # Push to local registry
-      docker push ${local.image_name}
-    EOF
-  }
-}
-
-# Run the proxy container
+# Run the proxy container (image should be pre-built by CI)
 resource "null_resource" "deploy_proxy_container" {
-  depends_on = [null_resource.build_proxy_image]
-
   triggers = {
     container_name = local.container_name
     proxy_port     = var.proxy_port

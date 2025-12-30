@@ -95,6 +95,8 @@ deploy_infra:
     AWS_ACCESS_KEY_ID: "test"
     AWS_SECRET_ACCESS_KEY: "test"
     TF_VAR_localstack_endpoint: "http://localstack-main:4566"
+  dependencies:
+    - build_proxy
   script:
     - apk add --no-cache aws-cli bash
     - /bin/bash -c "source config.sh && ./scripts/deploy-infra.sh"
@@ -152,6 +154,34 @@ build_backend:
   script:
     - apk add --no-cache bash
     - /bin/bash -c "source config.sh && ./scripts/ci-build-backend.sh"
+  only:
+    - main
+    - develop
+    - /^feature\/.*/
+    - /^base\/cicd-.*/
+
+build_proxy:
+  stage: build_backend
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command:
+        [
+          "dockerd",
+          "--host=tcp://0.0.0.0:2375",
+          "--tls=false",
+          "--insecure-registry=local-registry:5000",
+        ]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
+  script:
+    - apk add --no-cache bash
+    - docker build -t s3-website-proxy:latest infrastructure/modules/s3-website-proxy
+    - docker tag s3-website-proxy:latest $DOCKER_REGISTRY_ENDPOINT/s3-website-proxy:latest
+    - docker push $DOCKER_REGISTRY_ENDPOINT/s3-website-proxy:latest
   only:
     - main
     - develop
