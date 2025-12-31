@@ -4,7 +4,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     's3',
-    endpoint_url='http://localhost:4566',
+    endpoint_url=os.environ.get('AWS_ENDPOINT_URL', 'http://localhost:4566'),
     aws_access_key_id='test',
     aws_secret_access_key='test',
     region_name='us-east-1',
@@ -12,8 +12,12 @@ s3 = boto3.client(
 )
 
 import sys
-bucket = sys.argv[1] if len(sys.argv) > 1 else 'hello-nextjs-dev-devcontainer-localstack'
-local_dir = '/workspaces/experimental-nextjs-app/hello-nextjs/out'
+if len(sys.argv) < 2:
+    print("Usage: python3 deploy-nextjs.py <bucket_name>")
+    sys.exit(1)
+bucket = sys.argv[1]
+app_src_dir = os.environ.get('APP_SRC_DIR', 'the-app-src-dir-var-is-not-configured')
+local_dir = f'{app_src_dir}/out'
 
 def upload_dir(prefix=''):
     for root, dirs, files in os.walk(local_dir):

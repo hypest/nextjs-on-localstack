@@ -1,0 +1,68 @@
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    # Log format
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log /var/log/nginx/access.log main;
+    error_log /var/log/nginx/error.log warn;
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+
+    server {
+        listen ${PROXY_PORT};
+        server_name _;
+
+        # Proxy to Backend API (via API Gateway)
+        # Modern Cloud Architecture: CloudFront -> API Gateway -> Backend
+        location /api/ {
+            # Canonical AWS behavior: CloudFront sets the Host header to the Origin's domain
+            # This allows API Gateway to identify which API is being called
+            proxy_set_header Host ${API_GATEWAY_HOSTNAME};
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Proxy to API Gateway (internal LocalStack endpoint)
+            # We strip the /api/ prefix and forward the rest to the API Gateway stage
+            proxy_pass ${API_GATEWAY_URL}/${API_GATEWAY_STAGE}/;
+            
+            proxy_redirect off;
+        }
+
+        # Proxy to LocalStack S3 website endpoint (Frontend)
+        location / {
+            # Set the Host header for LocalStack's virtual-host routing
+            proxy_set_header Host ${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Proxy to LocalStack (container on same network)
+            proxy_pass http://localstack-main:4566;
+
+            # Handle redirects
+            proxy_redirect off;
+
+            # Error handling
+            proxy_intercept_errors on;
+        }
+
+        # Health check endpoint
+        location /health {
+            access_log off;
+            return 200 "OK\n";
+            add_header Content-Type text/plain;
+        }
+    }
+}

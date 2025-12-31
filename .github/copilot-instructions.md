@@ -42,7 +42,8 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
    - Uses boto3 to upload Next.js build artifacts to S3
    - Clears old files before upload (simulates `--delete`)
    - Sets proper Content-Type headers for HTML, JS, CSS, JSON, and image files
-   - Targets LocalStack S3 endpoint at localhost:4566
+   - Targets LocalStack S3 endpoint via `AWS_ENDPOINT_URL` (default: localhost:4566)
+   - Uses `APP_SRC_DIR` environment variable to locate build artifacts
 
 6. **Git Automation** (`git-hooks/`)
    - `post-commit`: Auto-deploys infrastructure and app on commits to `production` (→ prod) or `develop` (→ staging) branches
@@ -50,18 +51,28 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
 
 ## Key Patterns & Conventions
 
+### Configuration
+
+- `config.sh` in the project root defines all environment variables and functions
+- This file is automatically sourced in devcontainer (`postStartCommand`) and CI (`before_script`)
+- All scripts expect `config.sh` to be sourced (no manual sourcing needed)
+- Key variables: `INFRA_NAME`, `APP_NAME`, `PROJECT_ROOT`, `APP_SRC_DIR`
+- `tf_init()` function wraps `terraform init` with backend config
+
 ### Environment Management
 
 - Environments are passed as strings (e.g., `prod`, `staging`, `feature/mybranch`)
 - Branch names with slashes/spaces are sanitized to Terraform workspace names (e.g., `feature/mybranch` → `feature-mybranch`)
-- S3 bucket naming: `{bucket_base_name}-{environment}-{project_name}` (e.g., `hello-nextjs-prod-devcontainer-localstack`)
+- S3 bucket naming: `{bucket_base_name}-{environment}-{infra_name}` (e.g., `hello-nextjs-prod-devcontainer-localstack`)
 
 ### LocalStack Configuration
 
-- All AWS endpoints point to `http://localhost:4566`
+- All AWS endpoints point to `http://localhost:4566` (or `localstack-main` in CI)
 - Credentials are hardcoded as `test`/`test` (only works with LocalStack)
-- S3 uses path-style URLs (required for LocalStack)
-- Website URLs follow pattern: `http://{bucket}.s3-website.us-east-1.localhost.localstack.cloud:4566/`
+- S3 uses path-style URLs for API operations (required for LocalStack)
+- **Unified Access:** All environments are accessed via a dedicated Nginx proxy port (e.g., 8888 for prod).
+- **Routing:** The proxy routes `/` to the S3 website and `/api/` to the backend container.
+- **No basePath:** Next.js is built without `basePath` as the proxy handles bucket mapping.
 
 ### Infrastructure Organization
 
@@ -72,9 +83,9 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
 
 ### Deployment Workflow
 
-1. Deploy infrastructure: `./scripts/deploy-infra.sh <env>` → creates/updates S3 bucket
+1. Deploy infrastructure: `./scripts/deploy-infra.sh <env>` → creates S3 bucket and starts Nginx proxy
 2. Build and deploy app: `./scripts/deploy-app.sh <env>` → builds Next.js, uploads to S3
-3. Access website at the output URL (LocalStack S3 website endpoint)
+3. Access website at the **Proxy URL** (e.g., `http://localhost:8888/`)
 
 ### Docker-in-Docker Setup
 
@@ -91,6 +102,11 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
 - **Terraform State**: `prod` workspace exists with state in `infrastructure/terraform.tfstate.d/prod/`
 
 ## Development Workflow
+
+### When committing to git
+
+1. Limit the subject line to 50 characters
+2. Devcontainer setup changes need to be in their own commits, separate to the app's
 
 ### To Add a New Feature
 
@@ -118,9 +134,9 @@ This is a **LocalStack-based development environment** for deploying Next.js sta
 
 - This is a **local development environment only** - not for production AWS
 - All infrastructure is ephemeral (destroyed when LocalStack container stops unless persistence is enabled)
-- Python deployment script has hardcoded path to `/workspaces/experimental-nextjs-app/hello-nextjs/out`
 - No authentication/security - everything is public by design for local testing
-- Legacy files present: `deploy-nextjs.sh`, `bucket-policy.json`, `website-config.json` (unused, replaced by Python script and Terraform)
+- Legacy files present: `deploy-nextjs.sh`, `website-config.json` (unused, replaced by Python script and Terraform)
+- **CI Networking:** GitLab CI uses a custom MTU (1400) and DNS (8.8.8.8) to ensure stability in Codespaces.
 
 ## Troubleshooting
 

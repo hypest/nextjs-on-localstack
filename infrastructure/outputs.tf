@@ -26,3 +26,38 @@ output "s3_bucket_name" {
   description = "S3 bucket name for the app"
   value       = module.nextjs_s3.bucket_name
 }
+
+output "ec2_instance_id" {
+  description = "EC2 instance ID for backend API"
+  value       = module.backend_ec2.instance_id
+}
+
+output "ec2_instance_public_ip" {
+  description = "EC2 instance public IP"
+  value       = module.backend_ec2.instance_public_ip
+}
+
+output "api_endpoint" {
+  description = "Backend API endpoint URL"
+  value       = module.backend_ec2.api_endpoint
+}
+
+output "api_gateway_url" {
+  description = "API Gateway URL for the backend API"
+  value       = replace(replace(aws_api_gateway_stage.backend_api_stage.invoke_url, "https://", "http://"), "amazonaws.com", "localhost.localstack.cloud:4566")
+}
+
+output "s3_proxy_endpoint" {
+  description = "S3 website proxy endpoint (for Codespaces)"
+  value       = module.s3_website_proxy.proxy_endpoint
+}
+
+output "s3_proxy_port" {
+  description = "S3 website proxy port"
+  value       = module.s3_website_proxy.proxy_port
+}
+
+output "s3_proxy_container" {
+  description = "S3 website proxy container name"
+  value       = module.s3_website_proxy.container_name
+}

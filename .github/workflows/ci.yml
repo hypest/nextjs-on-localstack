@@ -1,0 +1,114 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Cache Node.js modules for Next.js
+        uses: actions/cache@v3
+        with:
+          path: hello-nextjs/node_modules
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('hello-nextjs/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
+
+      - name: Install dependencies for Next.js
+        run: cd hello-nextjs && npm ci
+
+      - name: Lint Next.js
+        run: cd hello-nextjs && npm run lint
+
+      - name: Build Next.js
+        run: cd hello-nextjs && npm run build
+
+      - name: Cache Node.js modules for backend
+        uses: actions/cache@v3
+        with:
+          path: backend-api/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('backend-api/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-
+
+      - name: Install dependencies for backend
+        run: cd backend-api && npm ci
+
+    # Note: Backend doesn't have linting set up yet. Add ESLint if needed.
+
+  validate-infra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Terraform Init
+        run: cd infrastructure && source ../config.sh && ../scripts/terraform-init
+
+      - name: Terraform Validate
+        run: cd infrastructure && terraform validate
+
+  deploy:
+    needs: [lint-and-build, validate-infra]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies for Next.js
+        run: cd hello-nextjs && npm ci
+
+      - name: Build Next.js
+        run: cd hello-nextjs && npm run build
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install boto3
+        run: pip install boto3
+
+      - name: Start LocalStack
+        run: ./scripts/start-localstack.sh
+
+      - name: Deploy Infrastructure
+        run: |
+          if [ "$GITHUB_REF" == "refs/heads/main" ]; then
+            ENV="prod"
+          elif [ "$GITHUB_REF" == "refs/heads/develop" ]; then
+            ENV="staging"
+          fi
+          ./scripts/deploy-infra.sh "$ENV"
+
+      - name: Deploy App
+        run: |
+          if [ "$GITHUB_REF" == "refs/heads/main" ]; then
+            ENV="prod"
+          elif [ "$GITHUB_REF" == "refs/heads/develop" ]; then
+            ENV="staging"
+          fi
+          ./scripts/deploy-app.sh "$ENV"

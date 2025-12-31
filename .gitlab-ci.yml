@@ -1,0 +1,239 @@
+stages:
+  - build_ci_images
+  - validate
+  - deploy_infra
+  - deploy_app
+  - build_backend
+  - deploy_backend
+
+variables:
+  DOCKER_HOST: unix:///var/run/docker.sock
+  # LocalStack is already running on the host at localhost:4566
+  # CI jobs access these via host network or gateway
+  # Codespaces environment variables are passed via runner's --env configuration
+  # (set during runner registration in setup-gitlab.sh)
+
+# Build custom CI images with pre-installed tools
+build_ci_node_image:
+  stage: build_ci_images
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command:
+        [
+          "dockerd",
+          "--host=tcp://0.0.0.0:2375",
+          "--tls=false",
+          "--insecure-registry=local-registry:5000",
+          "--mtu=1400",
+        ]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
+  script:
+    - apk add --no-cache bash curl jq
+    - /bin/bash -c "source config.sh && ./scripts/build-ci-node-image.sh"
+  rules:
+    - changes: [scripts/build-ci-node-image.sh, Dockerfile.ci-node]
+      when: always
+    - when: on_success
+
+build_ci_python_image:
+  stage: build_ci_images
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command:
+        [
+          "dockerd",
+          "--host=tcp://0.0.0.0:2375",
+          "--tls=false",
+          "--insecure-registry=local-registry:5000",
+          "--mtu=1400",
+        ]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
+  script:
+    - apk add --no-cache bash curl jq
+    - /bin/bash -c "source config.sh && ./scripts/build-ci-python-image.sh"
+  rules:
+    - changes: [scripts/build-ci-python-image.sh, Dockerfile.ci-python]
+      when: always
+    - when: on_success
+# CI checks (from ci.sh)
+validate:
+  stage: validate
+  image: localhost:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
+  variables:
+    # Access LocalStack on host via container name on gitlab-network
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
+    TF_VAR_localstack_endpoint: "http://localstack-main:4566"
+  script:
+    - /bin/bash -c "source config.sh && ./scripts/ci-validate.sh"
+  only:
+    - merge_requests
+    - main
+    - develop
+    - /^feature\/.*/
+    - /^base\/cicd-.*/
+
+# Deploy infrastructure (adapted from deploy-infra.sh)
+# Uses existing LocalStack at host gateway (accessible from CI containers)
+deploy_infra:
+  stage: deploy_infra
+  image: localhost:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
+  tags:
+    - deploy # Use deploy runner with host Docker access
+  variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock" # Use host Docker socket
+    # Access LocalStack on host via container name on gitlab-network
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
+    AWS_DEFAULT_REGION: "us-east-1"
+    TF_VAR_localstack_endpoint: "http://localstack-main:4566"
+  dependencies:
+    - build_proxy
+  script:
+    - /bin/bash -c "source config.sh && ./scripts/deploy-infra.sh"
+  environment:
+    name: $CI_COMMIT_REF_NAME
+  only:
+    - main
+    - develop
+    - /^feature\/.*/
+    - /^base\/cicd-.*/
+
+# Deploy app (adapted from deploy-app.sh)
+deploy_app:
+  stage: deploy_app
+  image: localhost:5001/root/nextjs-on-localstack/ci-python:$CI_COMMIT_REF_SLUG
+  tags:
+    - deploy # Use deploy runner with host Docker access
+  variables:
+    # Access LocalStack via container name on devcontainer-network
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
+    DOCKER_HOST: "unix:///var/run/docker.sock" # Use host Docker socket
+  dependencies:
+    - deploy_infra
+  script:
+    - /bin/bash -c "source config.sh && ./scripts/deploy-app.sh"
+  environment:
+    name: $CI_COMMIT_REF_NAME
+  only:
+    - main
+    - develop
+    - /^feature\/.*/
+    - /^base\/cicd-.*/
+
+# Deploy backend - builds in DinD, deploys via host Docker
+# Split into build and deploy stages for clarity
+build_backend:
+  stage: build_backend
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command:
+        [
+          "dockerd",
+          "--host=tcp://0.0.0.0:2375",
+          "--tls=false",
+          "--insecure-registry=local-registry:5000",
+          "--mtu=1400",
+        ]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
+  script:
+    - apk add --no-cache bash
+    - /bin/bash -c "source config.sh && ./scripts/ci-build-backend.sh"
+  only:
+    - main
+    - develop
+    - /^feature\/.*/
+    - /^base\/cicd-.*/
+
+build_proxy:
+  stage: build_ci_images
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command:
+        [
+          "dockerd",
+          "--host=tcp://0.0.0.0:2375",
+          "--tls=false",
+          "--insecure-registry=local-registry:5000",
+          "--mtu=1400",
+        ]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+    DOCKER_REGISTRY_ENDPOINT: "local-registry:5000"
+  script:
+    - apk add --no-cache bash
+    - docker build -t s3-website-proxy:latest infrastructure/modules/s3-website-proxy
+    - docker tag s3-website-proxy:latest $DOCKER_REGISTRY_ENDPOINT/s3-website-proxy:latest
+    - docker push $DOCKER_REGISTRY_ENDPOINT/s3-website-proxy:latest
+  only:
+    - main
+    - develop
+    - /^feature\/.*/
+    - /^base\/cicd-.*/
+
+deploy_backend:
+  stage: deploy_backend
+  image: localhost:5001/root/nextjs-on-localstack/ci-node:$CI_COMMIT_REF_SLUG
+  tags:
+    - deploy # Use deploy runner with host Docker access
+  variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock" # Use host Docker socket
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
+  dependencies:
+    - deploy_infra
+    - build_backend
+  script:
+    - /bin/bash -c "source config.sh && ./scripts/ci-deploy-backend.sh"
+  environment:
+    name: $CI_COMMIT_REF_NAME
+  only:
+    - main
+    - develop
+    - /^feature\/.*/
+    - /^base\/cicd-.*/
+
+# Manual deploy for production (if needed)
+deploy_production_manual:
+  stage: deploy_infra
+  image:
+    name: hashicorp/terraform:latest
+    entrypoint: [""]
+  variables:
+    # Access LocalStack on host via container name on gitlab-network
+    AWS_ENDPOINT_URL: "http://localstack-main:4566"
+    AWS_ACCESS_KEY_ID: "test"
+    AWS_SECRET_ACCESS_KEY: "test"
+    TF_VAR_localstack_endpoint: "http://localstack-main:4566"
+    TF_VAR_environment: "prod"
+  when: manual
+  script:
+    - apk add --no-cache aws-cli
+    - /bin/bash -c "source config.sh && ./scripts/deploy-infra.sh prod"
+  environment:
+    name: production
+  only:
+    - production

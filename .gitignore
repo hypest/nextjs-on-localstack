@@ -24,5 +24,9 @@ Thumbs.db
 # node_modules
 node_modules
 
+# Next.js build files
+.next/
+out/
+
 # Ignore venv used only for deploying
 venv-deploy

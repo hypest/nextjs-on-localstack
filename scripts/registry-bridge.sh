@@ -24,10 +24,10 @@ case "${1:-help}" in
             docker volume create simple_app_local_registry_data >/dev/null
 
         # Run registry if not already running
-        if docker ps --format '{{.Names}}' | grep -q '^local_registry$'; then
-            log "ℹ️  Registry container 'local_registry' already running"
+        if docker ps --format '{{.Names}}' | grep -q '^local-registry$'; then
+            log "ℹ️  Registry container 'local-registry' already running"
         else
-            docker run -d --name local_registry \
+            docker run -d --name local-registry \
                 -p 5001:5000 \
                 -e REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/data \
                 -v simple_app_local_registry_data:/data \
@@ -97,7 +97,7 @@ case "${1:-help}" in
     "clean")
         log "🧹 Cleaning up registry data..."
         # Stop and remove registry container if exists
-        docker rm -f local_registry 2>/dev/null || true
+        docker rm -f local-registry 2>/dev/null || true
         # Remove the persistent volume
         docker volume rm simple_app_local_registry_data 2>/dev/null || true
         log "✅ Registry data cleaned"

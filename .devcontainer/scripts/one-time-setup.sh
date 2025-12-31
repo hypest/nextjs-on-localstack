@@ -4,6 +4,7 @@ set -euo pipefail
 echo "Running one-time setup tasks..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_SCRIPTS_DIR="$SCRIPT_DIR/../../scripts"
 # script now lives in .devcontainer/scripts, repo root is two levels up
 WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
@@ -84,8 +85,16 @@ if [ -d "$WORKSPACE_ROOT/infrastructure" ]; then
     echo "No $SCRIPT_DIR/start-services.sh found; ensure LocalStack is running before terraform plan"
   fi
   if command -v terraform >/dev/null 2>&1; then
-    terraform init -input=false || echo "terraform init failed"
-    terraform plan -input=false || echo "terraform plan failed"
+    $WORKSPACE_ROOT/scripts/terraform-init -input=false || echo "terraform init failed"
+    
+    # Determine environment based on current git branch
+    environment=$("$PROJECT_SCRIPTS_DIR/get-environment-from-branch.sh")
+    echo "Detected environment: $environment"
+    
+    # Select or create Terraform workspace
+    terraform workspace select -or-create "$environment" || terraform workspace new "$environment" || echo "Failed to select/create workspace $environment"
+    
+    terraform plan -input=false -var environment="$environment" || echo "terraform plan failed"
     # Only auto-apply if explicitly enabled by env var
     if [ "${DEVCONTAINER_AUTO_APPLY_TF:-false}" = "true" ]; then
       echo "DEVCONTAINER_AUTO_APPLY_TF=true: running terraform apply (non-interactive)"

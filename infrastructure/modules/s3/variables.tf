@@ -1,5 +1,5 @@
 variable "bucket_name" {
-  description = "Name of the S3 bucket"
+  description = "S3 bucket name"
   type        = string
 }
 
@@ -8,7 +8,7 @@ variable "environment" {
   type        = string
 }
 
-variable "project_name" {
-  description = "Project name for tags"
+variable "infra_name" {
+  description = "Infrastructure name"
   type        = string
 }

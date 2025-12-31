@@ -1,33 +1,63 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Deploy Next.js static app to S3 for specific env/workspace
 # Usage: ./scripts/deploy-app.sh <environment>
+# Environment variable: DEPLOY_ENV (used if no argument provided)
 
-ENVIRONMENT="${1:?Error: Provide environment (e.g., prod, staging, feature/mybranch)}"
-BUCKET_BASE_NAME="hello-nextjs"
+if [ -z "${1:-}" ] && [ -z "${DEPLOY_ENV:-}" ]; then
+    export DEPLOY_ENV=$("$PROJECT_ROOT/scripts/get-environment-from-branch.sh")
+fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+ENVIRONMENT="${1:-${DEPLOY_ENV:?Error: Provide environment via argument or DEPLOY_ENV variable (e.g., prod, staging, feature/mybranch)}}"
+
 INFRA_DIR="$PROJECT_ROOT/infrastructure"
-APP_DIR="$PROJECT_ROOT/hello-nextjs"
 DEPLOY_PY="$PROJECT_ROOT/deploy-nextjs.py"  # Updated to take bucket arg
 VENV="$PROJECT_ROOT/venv-deploy"
 
+# Protection: Confirm prod/staging deployments
+if [[ "$ENVIRONMENT" == "prod" || "$ENVIRONMENT" == "staging" ]]; then
+    echo "⚠️  WARNING: You are about to deploy to '$ENVIRONMENT' environment!"
+    read -p "Are you sure you want to continue? (yes/no): " -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+        echo "❌ Deployment cancelled."
+        exit 1
+    fi
+fi
+
 echo "🚀 Deploying app for environment: $ENVIRONMENT"
 
-# Switch to env workspace & get bucket
+# CI-specific setup
+if [ -n "${GITLAB_CI:-}" ]; then
+    git config --global --add safe.directory /workspace
+fi
+
+# Initialize Terraform to ensure we can access outputs
+echo "Initializing Terraform..."
 cd "$INFRA_DIR"
-WORKSPACE=$(echo "$ENVIRONMENT" | tr '/' '-' | tr ' ' '_')
-terraform workspace select "$WORKSPACE"
-BUCKET_NAME=$(terraform output -raw s3_bucket_name)
+"$PROJECT_ROOT/scripts/terraform-init" -reconfigure > /dev/null
+
+# Get bucket name from Terraform
+cd "$PROJECT_ROOT"
+BUCKET_NAME=$(./scripts/get-bucket-name.sh "$ENVIRONMENT")
 echo "   Target bucket: $BUCKET_NAME"
+
+# Determine API endpoint for this environment
+# With the unified proxy, the API is always at /api relative to the frontend
+API_ENDPOINT="/api/status"
+echo "   API endpoint: $API_ENDPOINT"
 
 # Build Next.js static export
 echo "📦 Building Next.js..."
-cd "$APP_DIR"
+cd "$APP_SRC_DIR"
 npm ci --only=production  # Fast install
-npm run build
+
+# Unified build: No basePath needed as the proxy handles bucket mapping
+echo "   Building with unified proxy routing (API at $API_ENDPOINT)"
+NEXT_PUBLIC_API_ENDPOINT="$API_ENDPOINT" npm run build
 echo "   Build complete: out/ ready"
 
 # Deploy via Python (boto3)
@@ -41,4 +71,15 @@ pip install --upgrade pip boto3 botocore
 python3 "$DEPLOY_PY" "$BUCKET_NAME"
 
 echo "✅ App deployed to $BUCKET_NAME"
-echo "🌐 Website: http://${BUCKET_NAME}.s3-website.us-east-1.localhost.localstack.cloud:4566/"
+
+# Determine the access URL via the unified proxy
+cd "$INFRA_DIR"
+PROXY_PORT=$(terraform output -raw s3_proxy_port)
+cd "$PROJECT_ROOT"
+
+if [ "${CODESPACES:-}" = "true" ] && [ -n "${CODESPACE_NAME:-}" ]; then
+  WEBSITE_URL="https://${CODESPACE_NAME}-${PROXY_PORT}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}/"
+else
+  WEBSITE_URL="http://localhost:${PROXY_PORT}/"
+fi
+echo "🌐 Website: $WEBSITE_URL"

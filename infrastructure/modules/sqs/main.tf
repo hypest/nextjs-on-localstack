@@ -3,7 +3,7 @@ resource "aws_sqs_queue" "this" {
 
   tags = {
     Environment = var.environment
-    Project     = var.project_name
+    Project     = var.infra_name
   }
 }
 
@@ -12,6 +12,6 @@ resource "aws_sqs_queue" "dlq" {
 
   tags = {
     Environment = var.environment
-    Project     = var.project_name
+    Project     = var.infra_name
   }
 }

@@ -48,8 +48,8 @@ chmod 0777 "$LOCALSTACK_DIR" || true
 echo "Starting LocalStack container..."
 
 # Decide whether to mount a host directory for persistence
-DOCKER_RUN_CMD=(docker run -d --name "$CONTAINER_NAME" -p 4566:4566)
-DOCKER_RUN_CMD+=( -e SERVICES=s3,sqs,ec2,iam,autoscaling,elbv2,ecr,logs )
+DOCKER_RUN_CMD=(docker run -d --name "$CONTAINER_NAME" --network devcontainer-network -p 4566:4566)
+DOCKER_RUN_CMD+=( -e SERVICES=s3,sqs,ec2,iam,autoscaling,elbv2,ecr,logs,apigateway )
 DOCKER_RUN_CMD+=( -e S3_SKIP_TRAILERS=1 )
 DOCKER_RUN_CMD+=( -e DEBUG=1 )
 DOCKER_RUN_CMD+=( -e DOCKER_HOST=unix:///var/run/docker.sock )
@@ -70,6 +70,14 @@ fi
 DOCKER_RUN_CMD+=( localstack/localstack:3.0 )
 
 "${DOCKER_RUN_CMD[@]}" >/dev/null
+
+# Connect LocalStack to gitlab-network if it exists (for CI builds)
+if docker network ls --format '{{.Name}}' | grep -q '^gitlab-network$'; then
+    if ! docker inspect "$CONTAINER_NAME" --format '{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}' | grep -q "$(docker network inspect gitlab-network --format '{{.Id}}' | cut -c1-12)"; then
+        echo "🔗 Connecting LocalStack to gitlab-network..."
+        docker network connect gitlab-network "$CONTAINER_NAME"
+    fi
+fi
 
 # Wait for LocalStack to be ready
 echo "Waiting for LocalStack to be ready..."
@@ -99,9 +107,3 @@ while true; do
     sleep 1
     counter=$((counter+1))
 done
-
-# Initialize LocalStack resources if needed
-if [ -f "$SCRIPT_DIR/init-localstack.sh" ]; then
-    echo "Running LocalStack initialization script..."
-    bash "$SCRIPT_DIR/init-localstack.sh"
-fi
