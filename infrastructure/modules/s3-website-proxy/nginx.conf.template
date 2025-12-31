@@ -23,15 +23,17 @@ http {
         listen ${PROXY_PORT};
         server_name _;
 
-        # Proxy to Backend API
+        # Proxy to Backend API (via API Gateway)
+        # Modern Cloud Architecture: CloudFront -> API Gateway -> Backend
         location /api/ {
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
 
-            # Proxy to the backend container (on the same network)
-            proxy_pass http://${BACKEND_CONTAINER_NAME}:3001;
+            # Proxy to API Gateway (internal LocalStack endpoint)
+            # We strip the /api/ prefix and forward the rest to API Gateway
+            proxy_pass ${API_GATEWAY_URL}/;
             
             proxy_redirect off;
         }

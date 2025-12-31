@@ -77,6 +77,8 @@ module "s3_website_proxy" {
   proxy_port             = var.proxy_port
   bucket_name            = module.nextjs_s3.bucket_name
   backend_container_name = "backend-api-${var.environment}"
+  # Internal LocalStack URL for API Gateway
+  api_gateway_url        = "http://localstack-main:4566/restapis/${aws_api_gateway_rest_api.backend_api.id}/${aws_api_gateway_stage.backend_api_stage.stage_name}/_user_request_"
 }
 
 # API Gateway for backend API routing

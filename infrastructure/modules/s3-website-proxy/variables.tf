@@ -24,3 +24,8 @@ variable "backend_container_name" {
   description = "Name of the backend API container"
   type        = string
 }
+
+variable "api_gateway_url" {
+  description = "URL of the API Gateway (internal to LocalStack)"
+  type        = string
+}

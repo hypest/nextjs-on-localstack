@@ -15,6 +15,9 @@ resource "null_resource" "deploy_proxy_container" {
     image_name             = local.image_name
     bucket_name            = var.bucket_name
     backend_container_name = var.backend_container_name
+    api_gateway_url        = var.api_gateway_url
+    # Force redeployment on every apply to ensure container is up-to-date
+    timestamp              = timestamp()
   }
 
   provisioner "local-exec" {
@@ -32,6 +35,7 @@ resource "null_resource" "deploy_proxy_container" {
         -e PROXY_PORT=${var.proxy_port} \
         -e BUCKET_NAME=${var.bucket_name} \
         -e BACKEND_CONTAINER_NAME=${var.backend_container_name} \
+        -e API_GATEWAY_URL=${var.api_gateway_url} \
         ${local.image_name}
     EOF
   }
