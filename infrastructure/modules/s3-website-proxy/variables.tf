@@ -29,3 +29,13 @@ variable "api_gateway_url" {
   description = "URL of the API Gateway (internal to LocalStack)"
   type        = string
 }
+
+variable "api_gateway_hostname" {
+  description = "Hostname of the API Gateway (for Host header routing)"
+  type        = string
+}
+
+variable "api_gateway_stage" {
+  description = "Stage name of the API Gateway"
+  type        = string
+}

@@ -16,6 +16,8 @@ resource "null_resource" "deploy_proxy_container" {
     bucket_name            = var.bucket_name
     backend_container_name = var.backend_container_name
     api_gateway_url        = var.api_gateway_url
+    api_gateway_hostname   = var.api_gateway_hostname
+    api_gateway_stage      = var.api_gateway_stage
     # Force redeployment on every apply to ensure container is up-to-date
     timestamp              = timestamp()
   }
@@ -36,6 +38,8 @@ resource "null_resource" "deploy_proxy_container" {
         -e BUCKET_NAME=${var.bucket_name} \
         -e BACKEND_CONTAINER_NAME=${var.backend_container_name} \
         -e API_GATEWAY_URL=${var.api_gateway_url} \
+        -e API_GATEWAY_HOSTNAME=${var.api_gateway_hostname} \
+        -e API_GATEWAY_STAGE=${var.api_gateway_stage} \
         ${local.image_name}
     EOF
   }

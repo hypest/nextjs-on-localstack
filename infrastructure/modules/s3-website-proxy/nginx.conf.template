@@ -26,14 +26,16 @@ http {
         # Proxy to Backend API (via API Gateway)
         # Modern Cloud Architecture: CloudFront -> API Gateway -> Backend
         location /api/ {
-            proxy_set_header Host $host;
+            # Canonical AWS behavior: CloudFront sets the Host header to the Origin's domain
+            # This allows API Gateway to identify which API is being called
+            proxy_set_header Host ${API_GATEWAY_HOSTNAME};
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
 
             # Proxy to API Gateway (internal LocalStack endpoint)
-            # We strip the /api/ prefix and forward the rest to API Gateway
-            proxy_pass ${API_GATEWAY_URL}/;
+            # We strip the /api/ prefix and forward the rest to the API Gateway stage
+            proxy_pass ${API_GATEWAY_URL}/${API_GATEWAY_STAGE}/;
             
             proxy_redirect off;
         }
